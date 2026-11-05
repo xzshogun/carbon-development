@@ -29,7 +29,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("nautilus"))
 hl.bind(mainMod .. " + Space", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + " .. "SHIFT" .. " + R", hl.dsp.exec_cmd("hyprctl reload"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen())
-hl.bind(mainMod .. " + " .. "SHIFT" .. " + F", hl.dsp.exec_cmd(homeDir .. "/.config/hypr/scripts/carbon-focus.sh"))
+hl.bind(mainMod .. " + K", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-focus.sh"))
 hl.bind(mainMod .. " + " .. "SHIFT" .. " + S", hl.dsp.exec_cmd("hyprshot -m region"))
 hl.bind(mainMod .. " + " .. "SHIFT" .. " + Q", hl.dsp.exec_cmd("~/.config/hypr/scripts/KillActiveProcess.sh"))
 
@@ -38,8 +38,9 @@ hl.bind(mainMod .. " + " .. "SHIFT" .. " + Q", hl.dsp.exec_cmd("~/.config/hypr/s
 -- Mode-specific shell controls (SUPER+C, SUPER+R, SUPER+N, etc.) are loaded
 -- dynamically from ~/.config/hypr/current-mode-keybinds.lua
 -- ==============================================================================
--- Carbon Config Editor GUI (Settings)
-hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd(homeDir .. "/.config/hypr/scripts/carbon-config-editor"))
+-- Carbon Config Editor GUI & Rust Settings Hub
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-config-editor"))
+hl.bind(mainMod .. " + " .. "SHIFT" .. " + C", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-settings-hub"))
 
 -- Carbon Pomodoro Timer
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("~/.config/hypr/scripts/carbon-pomodoro"))

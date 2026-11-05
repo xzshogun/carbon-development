@@ -324,22 +324,32 @@ for src in "$REPO_DIR/hypr/configs/"*; do
         cp -f "$src" "$dst"
     else
         cp -f "$src" "$dst.dist" 2>/dev/null || true
-        # Always keep default mode keybind templates synchronized if untouched
-        if [[ "$name" == keybinds-*.conf ]]; then
+        if [[ "$name" == keybinds-*.conf || "$name" == "keybinds.conf" ]]; then
             cp -f "$src" "$dst"
         fi
     fi
-    [[ ! -f "$hypr_dst" ]] && cp -f "$src" "$hypr_dst" 2>/dev/null || true
+    cp -f "$src" "$hypr_dst" 2>/dev/null || true
 done
 
 for conf in windowrules.conf looknfeel.conf keybinds.conf keybinds-shell-only.conf blur-exceptions.conf power.conf hypridle.conf hyprlock.conf colors.conf; do
     src="$REPO_DIR/hypr/$conf"
     dst="$CONFIG_DIR/$conf"
     if [[ -f "$src" ]]; then
-        if [[ ! -f "$dst" ]]; then
+        if [[ ! -f "$dst" || "$conf" == "keybinds-shell-only.conf" ]]; then
             cp -f "$src" "$dst"
         else
             cp -f "$src" "$dst.dist" 2>/dev/null || true
+            # Migrate keybinds.conf in place for SUPER+K Focus Mode, SUPER+SHIFT+C Settings Hub, and unbinding hyprpicker
+            if [[ "$conf" == "keybinds.conf" ]]; then
+                sed -i '/hyprpicker -a/d' "$dst" 2>/dev/null || true
+                sed -i 's|bind = \$mainMod SHIFT, F, exec, .*carbon-focus\.sh|bind = \$mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh|g' "$dst" 2>/dev/null || true
+                if ! grep -Fq "carbon-settings-hub" "$dst" 2>/dev/null; then
+                    sed -i '/carbon-config-editor/a bind = $mainMod SHIFT, C, exec, ~/.config/carbon/scripts/carbon-settings-hub' "$dst" 2>/dev/null || true
+                fi
+                if ! grep -Fq "carbon-focus.sh" "$dst" 2>/dev/null; then
+                    sed -i '/carbon-config-editor/a bind = $mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh' "$dst" 2>/dev/null || true
+                fi
+            fi
         fi
     fi
 done
@@ -355,6 +365,9 @@ if [[ -f "$CONFIG_DIR/carbon.conf" ]]; then
     if grep -Fq "configs/vanish-keybinds.conf" "$CONFIG_DIR/carbon.conf"; then
         sed -i 's|configs/vanish-keybinds.conf|configs/current-mode-keybinds.conf|g' "$CONFIG_DIR/carbon.conf"
         ok "Migrated carbon.conf to source configs/current-mode-keybinds.conf"
+    fi
+    if ! grep -Fq "carbon-hub.service" "$CONFIG_DIR/carbon.conf"; then
+        sed -i '/carbon-quickshell.service/a exec-once = systemctl --user start carbon-hub.service' "$CONFIG_DIR/carbon.conf" 2>/dev/null || true
     fi
 fi
 
@@ -418,7 +431,7 @@ if [[ "$DRY_RUN" -eq 0 ]] && command -v cargo >/dev/null 2>&1; then
         [[ -d "$rust_root" ]] || continue
         for app_dir in "$rust_root/"*; do
             if [[ -d "$app_dir" && -f "$app_dir/Cargo.toml" ]]; then
-                (cd "$app_dir" && cargo build --release 2>/dev/null && cp -f target/release/* "$BIN_DIR/" 2>/dev/null) || true
+                (cd "$app_dir" && cargo build --release 2>/dev/null && find target/release -maxdepth 1 -type f -executable -exec cp -f {} "$BIN_DIR/" \; 2>/dev/null) || true
             fi
         done
     done
@@ -429,6 +442,7 @@ if [[ "$NO_RELOAD" -eq 0 && "$DRY_RUN" -eq 0 ]]; then
     if prompt_confirm "Restart Carbon Quickshell and reload Hyprland now? [Y/n]: " "Y"; then
         if command -v systemctl >/dev/null 2>&1 && systemctl --user is-enabled carbon-quickshell.service >/dev/null 2>&1; then
             systemctl --user restart carbon-quickshell.service >/dev/null 2>&1 || true
+            systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
         else
             pkill -x quickshell 2>/dev/null || true
             sleep 0.5

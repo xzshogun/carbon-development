@@ -263,6 +263,39 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
         "External Structure",
     )
 
+    # 2b. Verify requested keybind updates (MOD+SHIFT+C = Settings Hub, MOD+K = Focus Mode, hyprpicker unbound)
+    all_kb_files = [
+        SANDBOX_BASE / "carbon" / "keybinds-shell-only.conf",
+        SANDBOX_BASE / "carbon" / "keybinds.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-minimal.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-notch.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-pill.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-vanish.conf",
+    ]
+    kb_texts = [p.read_text() for p in all_kb_files if p.exists()]
+    no_hyprpicker = all("hyprpicker" not in t for t in kb_texts)
+    settings_hub_bound = all("carbon-settings-hub" in t and "SHIFT, C" in t for t in kb_texts)
+    focus_k_bound = all("carbon-focus.sh" in t and ", K, exec," in t for t in kb_texts)
+
+    add_assertion(
+        "Color Picker (hyprpicker -a) unbound across all modes and base profiles",
+        no_hyprpicker,
+        "0 references to 'hyprpicker' across all 6 deployed keybind files",
+        "Keybindings",
+    )
+    add_assertion(
+        "Rust Settings Hub bound to MOD + SHIFT + C across all profiles & modes",
+        settings_hub_bound,
+        "Verified bind = $mainMod SHIFT, C, exec, ~/.config/carbon/scripts/carbon-settings-hub",
+        "Keybindings",
+    )
+    add_assertion(
+        "Focus Mode (Hyper-Tunnel HUD) bound to MOD + K across all profiles & modes",
+        focus_k_bound,
+        "Verified bind = $mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh",
+        "Keybindings",
+    )
+
     # 3. Verify non-destructive Hyprland hook
     hypr_main = SANDBOX_BASE / "hypr" / "hyprland.conf"
     hypr_main_text = hypr_main.read_text() if hypr_main.exists() else ""

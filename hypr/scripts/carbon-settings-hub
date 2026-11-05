@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
-# Carbon Settings Hub (New Material 3 App)
+# Carbon Settings Hub (Rust-backed Material 3 App — Super + Shift + C)
 CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
-exec "$CONFIG_DIR/scripts/carbon-ipc.sh" settings
+BIN_DIR="${HOME}/.local/bin"
+
+# Ensure the Rust backend daemon (carbon-hub-daemon) is running for Settings Hub
+if [ ! -S "/tmp/carbon-hub.sock" ]; then
+    if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-hub.service >/dev/null 2>&1; then
+        systemctl --user start carbon-hub.service 2>/dev/null || true
+    elif [ -x "$BIN_DIR/carbon-hub-daemon" ]; then
+        nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
+    elif command -v carbon-hub-daemon >/dev/null 2>&1; then
+        nohup carbon-hub-daemon >/dev/null 2>&1 &
+    fi
+fi
+
+if [ -x "$CONFIG_DIR/scripts/carbon-ipc.sh" ]; then
+    exec sh "$CONFIG_DIR/scripts/carbon-ipc.sh" settings
+elif [ -x "${HOME}/.config/hypr/scripts/carbon-ipc.sh" ]; then
+    exec sh "${HOME}/.config/hypr/scripts/carbon-ipc.sh" settings
+fi

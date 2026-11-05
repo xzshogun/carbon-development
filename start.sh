@@ -242,6 +242,12 @@ if [[ "$FOREGROUND" -eq 1 ]]; then
     exec "$QS_BIN" --config "$QUICKSHELL_DIR"
 fi
 
+if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-hub.service >/dev/null 2>&1; then
+    systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
+elif [[ -x "$BIN_DIR/carbon-hub-daemon" ]] && ! pgrep -x carbon-hub-daemon >/dev/null 2>&1; then
+    nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
+fi
+
 if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-quickshell.service >/dev/null 2>&1; then
     if systemctl --user restart carbon-quickshell.service >/dev/null 2>&1; then
         ok "Carbon Shell started via systemd (carbon-quickshell.service)"

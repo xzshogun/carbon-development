@@ -223,7 +223,7 @@ class InstallerWindow(Adw.ApplicationWindow):
         group = Adw.PreferencesGroup()
         row_keep = Adw.ActionRow(
             title="Keep Existing Keybindings (Recommended)",
-            subtitle="Preserves all your current terminal, workspace, and window movement shortcuts. Only maps shell triggers (Super+C, Super+Tab, Super+Space, Super+N, Super+T)."
+            subtitle="Preserves all your current terminal, workspace, and window movement shortcuts. Maps shell triggers (Super+Shift+C Settings Hub, Super+C Config GUI, Super+K Focus Mode, Super+Tab, Super+Space, Super+N, Super+T)."
         )
         radio_keep = Gtk.CheckButton()
         radio_keep.set_active(self.keybind_mode == "keep")
@@ -545,6 +545,7 @@ general {{
 }}
 
 exec-once = systemctl --user start carbon-quickshell.service
+exec-once = systemctl --user start carbon-hub.service
 exec-once = bash -c 'wl-paste --watch cliphist store'
 exec-once = bash -c 'wl-paste --type image --watch cliphist store'
 exec-once = hypridle -c ~/.config/carbon/hypridle.conf
@@ -615,6 +616,7 @@ exec-once = ~/.config/carbon/scripts/carbon-snap-top.sh
             if not DRY_RUN and shutil.which("systemctl"):
                 subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
                 subprocess.run(["systemctl", "--user", "enable", "carbon-quickshell.service"], capture_output=True)
+                subprocess.run(["systemctl", "--user", "enable", "carbon-hub.service"], capture_output=True)
 
             self._set_status("Integrating with Hyprland...", 0.85)
             HYPR_DIR.mkdir(parents=True, exist_ok=True)
@@ -675,6 +677,7 @@ exec-once = ~/.config/carbon/scripts/carbon-snap-top.sh
             try:
                 if shutil.which("systemctl"):
                     subprocess.run(["systemctl", "--user", "restart", "carbon-quickshell.service"], capture_output=True)
+                    subprocess.run(["systemctl", "--user", "restart", "carbon-hub.service"], capture_output=True)
                 if shutil.which("hyprctl"):
                     subprocess.run(["hyprctl", "reload"], capture_output=True)
             except Exception:

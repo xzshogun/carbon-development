@@ -362,6 +362,7 @@ general {
 }
 
 exec-once = systemctl --user start carbon-quickshell.service
+exec-once = systemctl --user start carbon-hub.service
 exec-once = bash -c 'wl-paste --watch cliphist store'
 exec-once = bash -c 'wl-paste --type image --watch cliphist store'
 exec-once = hypridle -c ~/.config/carbon/hypridle.conf
@@ -447,7 +448,7 @@ if [[ "$NO_DEPS" -eq 0 ]] && command -v cargo >/dev/null 2>&1; then
         [[ -d "$rust_root" ]] || continue
         for app_dir in "$rust_root/"*; do
             if [[ -d "$app_dir" && -f "$app_dir/Cargo.toml" ]]; then
-                (cd "$app_dir" && cargo build --release 2>/dev/null && cp -f target/release/* "$BIN_DIR/" 2>/dev/null) || true
+                (cd "$app_dir" && cargo build --release 2>/dev/null && find target/release -maxdepth 1 -type f -executable -exec cp -f {} "$BIN_DIR/" \; 2>/dev/null) || true
             fi
         done
     done
@@ -465,6 +466,7 @@ done
 if [[ "$DRY_RUN" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
     systemctl --user daemon-reload >/dev/null 2>&1 || true
     systemctl --user enable carbon-quickshell.service >/dev/null 2>&1 || true
+    systemctl --user enable carbon-hub.service >/dev/null 2>&1 || true
 fi
 
 # Default wallpaper & initial theme
@@ -494,7 +496,9 @@ printf "   Configuration: %s\n" "$CONFIG_DIR"
 printf "   Active Mode  : %s\n" "$BAR_JSON_MODE"
 printf "   Keybind Base : %s\n" "$KEYBIND_MODE"
 printf "   Start Shell  : carbon-start (or ./start.sh)\n"
-printf "   Settings GUI : Super + C (or carbon-config-editor)\n"
+printf "   Settings Hub : Super + Shift + C (or carbon-settings-hub)\n"
+printf "   Config GUI   : Super + C (or carbon-config-editor)\n"
+printf "   Focus Mode   : Super + K (or ~/.config/carbon/scripts/carbon-focus.sh)\n"
 printf "   Updater      : carbon-update (or ./update.sh)\n"
 printf "   Uninstaller  : carbon-uninstall (or ./uninstall.sh)\n\n"
 
@@ -502,6 +506,7 @@ if [[ "$NO_RELOAD" -eq 0 && "$DRY_RUN" -eq 0 ]]; then
     if prompt_confirm "Start Carbon Quickshell and reload Hyprland now? [Y/n]: " "Y"; then
         if command -v systemctl >/dev/null 2>&1; then
             systemctl --user restart carbon-quickshell.service >/dev/null 2>&1 || true
+            systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
         fi
         if command -v hyprctl >/dev/null 2>&1; then
             hyprctl reload >/dev/null 2>&1 || true
