@@ -47,7 +47,7 @@ Item {
     property bool globalBlurEnabled: true
     property bool clickOutsideDismiss: true
     property bool escKeyDismiss: true
-    property string activeKeybindFocus: "SUPER + SHIFT + F"
+    property string activeKeybindFocus: "SUPER + K"
     property string activeKeybindCenter: "SUPER + G"
     property string activeKeybindCanvas: "SUPER + `"
 
@@ -56,8 +56,24 @@ Item {
     property int sideEdgeSensorWidth: 4
     property int sideDefaultFocusMin: 25
     property int sideDefaultBreakMin: 5
-    property string sideDefaultSound: "rain" // "rain" | "binaural" | "white" | "none"
+    property string sideDefaultSound: "rain" // "rain" | "brown" | "none"
     property bool sideWaylandBlackout: true
+
+    function saveFocusSettings() {
+        var payload = JSON.stringify({
+            leftEdgeHover: root.sideEdgeHoverEnabled,
+            waylandBlackout: root.sideWaylandBlackout,
+            defaultFocusMin: root.sideDefaultFocusMin,
+            defaultBreakMin: root.sideDefaultBreakMin,
+            defaultSound: (root.sideDefaultSound === "binaural" || root.sideDefaultSound === "white") ? "brown" : root.sideDefaultSound
+        }, null, 2)
+        Quickshell.execDetached([
+            "python3", "-c",
+            "import os, sys; p = os.path.expanduser(sys.argv[1]); os.makedirs(os.path.dirname(p), exist_ok=True); open(p, 'w', encoding='utf-8').write(sys.argv[2])",
+            root.configDir + "/focus-settings.json",
+            payload
+        ])
+    }
 
     // Side Panel Preview State (Interactive)
     property bool sideTimerRunning: false
@@ -260,7 +276,7 @@ Item {
 
     // ── External Trigger Helpers ─────────────────────────────────────────────
     function triggerExternalLaunch(cmd) {
-        Quickshell.execDetached(["sh", (Quickshell.env("HOME") || "") + "/.config/hypr/scripts/carbon-ipc.sh", cmd])
+        Quickshell.execDetached(["sh", root.configDir + "/scripts/carbon-ipc.sh", cmd])
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -645,7 +661,10 @@ Item {
                                     Item { Layout.fillWidth: true }
                                     Switch {
                                         checked: root.sideEdgeHoverEnabled
-                                        onToggled: root.sideEdgeHoverEnabled = checked
+                                        onToggled: {
+                                            root.sideEdgeHoverEnabled = checked
+                                            root.saveFocusSettings()
+                                        }
                                     }
                                 }
 
@@ -662,7 +681,10 @@ Item {
                                     Item { Layout.fillWidth: true }
                                     Switch {
                                         checked: root.sideWaylandBlackout
-                                        onToggled: root.sideWaylandBlackout = checked
+                                        onToggled: {
+                                            root.sideWaylandBlackout = checked
+                                            root.saveFocusSettings()
+                                        }
                                     }
                                 }
                             }
@@ -708,7 +730,15 @@ Item {
                                                 border.color: root.sideDefaultFocusMin === modelData ? Theme.primary : Qt.rgba(1, 1, 1, 0.12)
                                                 border.width: 1
                                                 Text { anchors.centerIn: parent; text: modelData + " MIN"; font.family: Theme.fontMono; font.pixelSize: Theme.fontPx(10); font.weight: Font.Bold; color: root.sideDefaultFocusMin === modelData ? Theme.primary : Qt.rgba(1, 1, 1, 0.70) }
-                                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.sideDefaultFocusMin = modelData; root.resetSideTimer(modelData) } }
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        root.sideDefaultFocusMin = modelData
+                                                        root.resetSideTimer(modelData)
+                                                        root.saveFocusSettings()
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -725,17 +755,23 @@ Item {
                                         Repeater {
                                             model: [
                                                 { id: "rain", label: "🌧 Rain ASMR" },
-                                                { id: "binaural", label: "🎧 Binaural" },
-                                                { id: "white", label: "📻 White Noise" },
+                                                { id: "brown", label: "🎧 Brown Noise" },
                                                 { id: "none", label: "🔇 Mute" }
                                             ]
                                             delegate: Rectangle {
-                                                width: Theme.px(100); height: Theme.px(28); radius: Theme.px(6)
+                                                width: Theme.px(110); height: Theme.px(28); radius: Theme.px(6)
                                                 color: root.sideDefaultSound === modelData.id ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.25) : Qt.rgba(1, 1, 1, 0.06)
                                                 border.color: root.sideDefaultSound === modelData.id ? Theme.primary : Qt.rgba(1, 1, 1, 0.12)
                                                 border.width: 1
                                                 Text { anchors.centerIn: parent; text: modelData.label; font.family: Theme.font; font.pixelSize: Theme.fontPx(10); font.weight: Font.DemiBold; color: root.sideDefaultSound === modelData.id ? Theme.primary : Qt.rgba(1, 1, 1, 0.70) }
-                                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.sideDefaultSound = modelData.id }
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        root.sideDefaultSound = modelData.id
+                                                        root.saveFocusSettings()
+                                                    }
+                                                }
                                             }
                                         }
                                     }

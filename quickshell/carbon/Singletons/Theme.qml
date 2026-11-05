@@ -79,6 +79,15 @@ Singleton {
                     root.shellScale = s
                     root.fontScale = s
                 }
+                if (d.distroIcon !== undefined && String(d.distroIcon).length > 0) {
+                    root.distroIcon = String(d.distroIcon)
+                }
+                if (d.workspaceActiveGlyph !== undefined && String(d.workspaceActiveGlyph).length > 0) {
+                    root.workspaceActiveGlyph = String(d.workspaceActiveGlyph)
+                }
+                if (d.workspaceInactiveGlyph !== undefined && String(d.workspaceInactiveGlyph).length > 0) {
+                    root.workspaceInactiveGlyph = String(d.workspaceInactiveGlyph)
+                }
             }
         } catch (e) {}
         root.reload()

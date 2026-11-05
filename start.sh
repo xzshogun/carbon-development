@@ -242,10 +242,14 @@ if [[ "$FOREGROUND" -eq 1 ]]; then
     exec "$QS_BIN" --config "$QUICKSHELL_DIR"
 fi
 
-if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-hub.service >/dev/null 2>&1; then
-    systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
-elif [[ -x "$BIN_DIR/carbon-hub-daemon" ]] && ! pgrep -x carbon-hub-daemon >/dev/null 2>&1; then
-    nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
+if [[ ! -S "/tmp/carbon-hub.sock" ]]; then
+    if [[ -x "$BIN_DIR/carbon-hub-daemon" ]] && ! pgrep -x carbon-hub-daemon >/dev/null 2>&1; then
+        nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
+    elif [[ -f "$CONFIG_DIR/scripts/carbon-hub-daemon.py" ]] && ! pgrep -f "carbon-hub-daemon.py" >/dev/null 2>&1; then
+        nohup python3 "$CONFIG_DIR/scripts/carbon-hub-daemon.py" >/dev/null 2>&1 &
+    elif command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-hub.service >/dev/null 2>&1; then
+        systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
+    fi
 fi
 
 if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-quickshell.service >/dev/null 2>&1; then

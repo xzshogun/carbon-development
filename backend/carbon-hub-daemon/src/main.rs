@@ -222,19 +222,24 @@ async fn get_hypr_state() -> Value {
 // ---------------------------------------------------------------------------
 async fn run_matugen(scheme: &str, wall_path: Option<&str>) {
     let cfg = config_dir();
-    let script = cfg.join("scripts/matugen-scheme.sh");
-    if script.exists() {
-        let _ = Command::new("bash")
-            .arg(&script)
-            .arg(scheme)
-            .spawn();
+    let _ = fs::write(cfg.join("scheme_state"), format!("{}\n", scheme));
+    let theme_mk = cfg.join("scripts/theme-mk.py");
+    let wp = if let Some(p) = wall_path {
+        p.to_string()
     } else {
-        let wp = if let Some(p) = wall_path {
-            p.to_string()
-        } else {
-            let wp_state = cfg.join("current_wallpaper_path");
-            fs::read_to_string(&wp_state).unwrap_or_default().trim().to_string()
-        };
+        let wp_state = cfg.join("current_wallpaper_path");
+        fs::read_to_string(&wp_state).unwrap_or_default().trim().to_string()
+    };
+
+    if theme_mk.exists() {
+        let mut cmd = Command::new("python3");
+        cmd.arg(&theme_mk);
+        if !wp.is_empty() {
+            cmd.arg(&wp);
+        }
+        cmd.args(["--scheme", scheme]);
+        let _ = cmd.spawn();
+    } else {
         let mat_type = match scheme.to_lowercase().as_str() {
             "expressive" => "scheme-expressive",
             "fidelity" => "scheme-fidelity",
@@ -272,25 +277,46 @@ async fn apply_wallpaper(path: &str) {
     }
 }
 
-async fn shuffle_wallpaper() -> Option<String> {
-    let wp_dir = home_dir().join("Pictures/Wallpapers");
-    if !wp_dir.exists() {
-        return None;
-    }
-
-    let mut entries = Vec::new();
-    if let Ok(rd) = fs::read_dir(&wp_dir) {
-        for entry in rd.flatten() {
-            let path = entry.path();
-            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                let ext = ext.to_lowercase();
-                if ["jpg", "jpeg", "png", "webp", "avif"].contains(&ext.as_str()) {
-                    entries.push(path.to_string_lossy().to_string());
+fn collect_wallpapers_from_dirs(include_video: bool) -> Vec<PathBuf> {
+    let mut dirs = vec![
+        home_dir().join("Pictures/Wallpapers"),
+        config_dir().join("assets/wallpapers"),
+        home_dir().join(".local/share/quickshell/carbon/assets/wallpapers"),
+        home_dir().join(".local/share/wallpapers"),
+    ];
+    let mut results = Vec::new();
+    let mut visited = std::collections::HashSet::new();
+    while let Some(dir) = dirs.pop() {
+        if !dir.exists() {
+            continue;
+        }
+        if let Ok(rd) = fs::read_dir(&dir) {
+            for entry in rd.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    dirs.push(path);
+                } else if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                    let ext = ext.to_lowercase();
+                    let allowed = if include_video {
+                        ["jpg", "jpeg", "png", "webp", "avif", "mp4", "mkv", "webm"].contains(&ext.as_str())
+                    } else {
+                        ["jpg", "jpeg", "png", "webp", "avif"].contains(&ext.as_str())
+                    };
+                    if allowed {
+                        let s = path.to_string_lossy().to_string();
+                        if visited.insert(s) {
+                            results.push(path);
+                        }
+                    }
                 }
             }
         }
     }
+    results
+}
 
+async fn shuffle_wallpaper() -> Option<String> {
+    let entries = collect_wallpapers_from_dirs(false);
     if entries.is_empty() {
         return None;
     }
@@ -298,38 +324,29 @@ async fn shuffle_wallpaper() -> Option<String> {
     use std::time::SystemTime;
     let nanos = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().subsec_nanos();
     let idx = (nanos as usize) % entries.len();
-    let chosen = entries[idx].clone();
+    let chosen = entries[idx].to_string_lossy().to_string();
     apply_wallpaper(&chosen).await;
     Some(chosen)
 }
 
 fn list_local_wallpapers() -> Value {
-    let wp_dir = home_dir().join("Pictures/Wallpapers");
     let thumb_dir = home_dir().join(".cache/carbon/thumbs");
     let mut list = Vec::new();
 
-    if let Ok(rd) = fs::read_dir(&wp_dir) {
-        for entry in rd.flatten() {
-            let path = entry.path();
-            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                let ext = ext.to_lowercase();
-                if ["jpg", "jpeg", "png", "webp", "avif", "mp4", "mkv", "webm"].contains(&ext.as_str()) {
-                    let fname = entry.file_name().to_string_lossy().to_string();
-                    let thumb_path = thumb_dir.join(format!("{}.jpg", fname));
-                    let thumb_url = if thumb_path.exists() {
-                        format!("file://{}", thumb_path.to_string_lossy())
-                    } else {
-                        format!("file://{}", path.to_string_lossy())
-                    };
-                    list.push(json!({
-                        "id": fname,
-                        "path": path.to_string_lossy(),
-                        "thumb": thumb_url,
-                        "filename": fname
-                    }));
-                }
-            }
-        }
+    for path in collect_wallpapers_from_dirs(true) {
+        let fname = path.file_name().map(|f| f.to_string_lossy().to_string()).unwrap_or_default();
+        let thumb_path = thumb_dir.join(format!("{}.jpg", fname));
+        let thumb_url = if thumb_path.exists() {
+            format!("file://{}", thumb_path.to_string_lossy())
+        } else {
+            format!("file://{}", path.to_string_lossy())
+        };
+        list.push(json!({
+            "id": fname,
+            "path": path.to_string_lossy(),
+            "thumb": thumb_url,
+            "filename": fname
+        }));
     }
 
     json!(list)
@@ -477,9 +494,14 @@ async fn set_vrr(state: i64) -> Result<(), String> {
 async fn set_temperature(temp: i64) {
     if temp >= 6500 {
         let _ = Command::new("pkill").args(["-x", "hyprsunset"]).spawn();
+        let _ = Command::new("pkill").args(["-x", "wlsunset"]).spawn();
+        let _ = Command::new("pkill").args(["-x", "gammastep"]).spawn();
     } else {
         let _ = Command::new("pkill").args(["-x", "hyprsunset"]).status().await;
-        let _ = Command::new("hyprsunset").arg("-t").arg(temp.to_string()).spawn();
+        if Command::new("hyprsunset").arg("-t").arg(temp.to_string()).spawn().is_err() {
+            let _ = Command::new("pkill").args(["-x", "wlsunset"]).status().await;
+            let _ = Command::new("wlsunset").args(["-T", &(temp + 100).to_string(), "-t", &temp.to_string()]).spawn();
+        }
     }
 }
 
@@ -680,12 +702,33 @@ async fn handle_request(req: HubRequest) -> HubResponse {
         }
         "set_ambient_glow" => {
             let val = req.value.and_then(|v| v.as_bool()).unwrap_or(false);
-            let state_file = config_dir().join("ambient_glow_state");
-            let _ = fs::write(state_file, if val { "1\n" } else { "0\n" });
+            let cfg = config_dir();
+            let state_file = cfg.join("ambient_glow_state");
+            let _ = fs::write(&state_file, if val { "1\n" } else { "0\n" });
+            let audio_border = cfg.join("scripts/audio-border.py");
+            if val {
+                if audio_border.exists() {
+                    let _ = Command::new("python3").arg(&audio_border).spawn();
+                }
+            } else {
+                let _ = Command::new("pkill").args(["-f", "audio-border.py"]).spawn();
+            }
             HubResponse {
                 status: "ok".into(),
                 action: Some(action),
                 data: Some(json!({ "ambient_glow": val })),
+                error: None,
+                elapsed_us: Some(t0.elapsed().as_micros()),
+            }
+        }
+        "set_m3_transitions" => {
+            let val = req.value.and_then(|v| v.as_bool()).unwrap_or(true);
+            let state_file = config_dir().join("m3_transitions_state");
+            let _ = fs::write(&state_file, if val { "1\n" } else { "0\n" });
+            HubResponse {
+                status: "ok".into(),
+                action: Some(action),
+                data: Some(json!({ "m3_transitions": val })),
                 error: None,
                 elapsed_us: Some(t0.elapsed().as_micros()),
             }
@@ -908,6 +951,41 @@ async fn handle_request(req: HubRequest) -> HubResponse {
             let state = req.value.and_then(|v| v.as_bool()).unwrap_or(false);
             if feat == "direct_scanout" {
                 let _ = send_raw_hypr_cmd(&format!("eval hl.config({{ render = {{ direct_scanout = {} }} }})", state)).await;
+                let _ = send_raw_hypr_cmd(&format!("keyword render:direct_scanout {}", if state { 1 } else { 0 })).await;
+            } else if feat == "10bit" {
+                let monitors = get_hypr_monitors().await;
+                if let Some(arr) = monitors.as_array() {
+                    if let Some(m) = arr.first() {
+                        let name = m.get("name").and_then(|v| v.as_str()).unwrap_or("eDP-1");
+                        let w = m.get("width").and_then(|v| v.as_i64()).unwrap_or(1920);
+                        let h = m.get("height").and_then(|v| v.as_i64()).unwrap_or(1080);
+                        let r = m.get("refreshRate").and_then(|v| v.as_f64()).unwrap_or(60.0);
+                        let x = m.get("x").and_then(|v| v.as_i64()).unwrap_or(0);
+                        let y = m.get("y").and_then(|v| v.as_i64()).unwrap_or(0);
+                        let s = m.get("scale").and_then(|v| v.as_f64()).unwrap_or(1.0);
+                        if state {
+                            let _ = send_raw_hypr_cmd(&format!("keyword monitor {},{}x{}@{:.0},{}x{},{:.2},bitdepth,10", name, w, h, r, x, y, s)).await;
+                        } else {
+                            let _ = send_raw_hypr_cmd(&format!("keyword monitor {},{}x{}@{:.0},{}x{},{:.2}", name, w, h, r, x, y, s)).await;
+                        }
+                    }
+                }
+            } else if feat == "mirror" {
+                let monitors = get_hypr_monitors().await;
+                if let Some(arr) = monitors.as_array() {
+                    if arr.len() >= 2 {
+                        let primary = arr[0].get("name").and_then(|v| v.as_str()).unwrap_or("eDP-1");
+                        for m in arr.iter().skip(1) {
+                            if let Some(sec_name) = m.get("name").and_then(|v| v.as_str()) {
+                                if state {
+                                    let _ = send_raw_hypr_cmd(&format!("keyword monitor {},preferred,auto,1,mirror,{}", sec_name, primary)).await;
+                                } else {
+                                    let _ = send_raw_hypr_cmd(&format!("keyword monitor {},preferred,auto,1", sec_name)).await;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             HubResponse {
                 status: "ok".into(),

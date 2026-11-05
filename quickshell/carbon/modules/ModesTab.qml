@@ -94,34 +94,46 @@ Item {
 
     function activateMode(modeName) {
         root.activeSystemMode = modeName
-        var script = "import json, os\n" +
-            "dir = os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon'))\n" +
-            "os.makedirs(dir, exist_ok=True)\n" +
-            "p = os.path.join(dir, 'carbon-bar-mode.json')\n" +
-            "d = json.load(open(p)) if os.path.exists(p) else {}\n" +
-            "d['mode'] = '" + modeName + "'\n" +
-            "json.dump(d, open(p, 'w'), indent=2)\n"
+        var script = "import json, os, subprocess\n" +
+            "for dir in [os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon')), os.path.expanduser('~/.config/hypr')]:\n" +
+            "    os.makedirs(dir, exist_ok=True)\n" +
+            "    p = os.path.join(dir, 'carbon-bar-mode.json')\n" +
+            "    try:\n" +
+            "        d = json.load(open(p)) if os.path.exists(p) else {}\n" +
+            "    except Exception:\n" +
+            "        d = {}\n" +
+            "    d['mode'] = '" + modeName + "'\n" +
+            "    json.dump(d, open(p, 'w'), indent=2)\n" +
+            "kb = os.path.join(os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon')), 'scripts', 'carbon-mode-keybinds.sh')\n" +
+            "if os.path.isfile(kb):\n" +
+            "    subprocess.Popen(['bash', kb, '" + modeName + "'])\n"
         Quickshell.execDetached(["python3", "-c", script])
     }
 
     function saveBarEdgeConfig(edge) {
         var script = "import json, os\n" +
-            "dir = os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon'))\n" +
-            "os.makedirs(dir, exist_ok=True)\n" +
-            "p1 = os.path.join(dir, 'carbon-bar-position.json')\n" +
-            "d1 = json.load(open(p1)) if os.path.exists(p1) else {}\n" +
-            "d1['mainBarEdge'] = '" + edge + "'\n" +
-            "d1['edge'] = '" + edge + "'\n" +
-            "d1['barEdge'] = '" + edge + "'\n" +
-            "d1['musicBarEdge'] = '" + edge + "'\n" +
-            "d1['leftEdge'] = '" + edge + "'\n" +
-            "d1['centerEdge'] = '" + edge + "'\n" +
-            "d1['rightEdge'] = '" + edge + "'\n" +
-            "json.dump(d1, open(p1, 'w'), indent=2)\n" +
-            "p2 = os.path.join(dir, 'carbon-bar-mode.json')\n" +
-            "d2 = json.load(open(p2)) if os.path.exists(p2) else {}\n" +
-            "d2['mainBarEdge'] = '" + edge + "'\n" +
-            "json.dump(d2, open(p2, 'w'), indent=2)\n"
+            "for dir in [os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon')), os.path.expanduser('~/.config/hypr')]:\n" +
+            "    os.makedirs(dir, exist_ok=True)\n" +
+            "    p1 = os.path.join(dir, 'carbon-bar-position.json')\n" +
+            "    try:\n" +
+            "        d1 = json.load(open(p1)) if os.path.exists(p1) else {}\n" +
+            "    except Exception:\n" +
+            "        d1 = {}\n" +
+            "    d1['mainBarEdge'] = '" + edge + "'\n" +
+            "    d1['edge'] = '" + edge + "'\n" +
+            "    d1['barEdge'] = '" + edge + "'\n" +
+            "    d1['musicBarEdge'] = '" + edge + "'\n" +
+            "    d1['leftEdge'] = '" + edge + "'\n" +
+            "    d1['centerEdge'] = '" + edge + "'\n" +
+            "    d1['rightEdge'] = '" + edge + "'\n" +
+            "    json.dump(d1, open(p1, 'w'), indent=2)\n" +
+            "    p2 = os.path.join(dir, 'carbon-bar-mode.json')\n" +
+            "    try:\n" +
+            "        d2 = json.load(open(p2)) if os.path.exists(p2) else {}\n" +
+            "    except Exception:\n" +
+            "        d2 = {}\n" +
+            "    d2['mainBarEdge'] = '" + edge + "'\n" +
+            "    json.dump(d2, open(p2, 'w'), indent=2)\n"
         Quickshell.execDetached(["python3", "-c", script])
     }
 
@@ -133,12 +145,15 @@ Item {
 
     function saveBottomSetting(key, val) {
         var script = "import json, os\n" +
-            "dir = os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon'))\n" +
-            "os.makedirs(dir, exist_ok=True)\n" +
-            "p1 = os.path.join(dir, 'carbon-bar-position.json')\n" +
-            "d1 = json.load(open(p1)) if os.path.exists(p1) else {}\n" +
-            "d1['" + key + "'] = " + JSON.stringify(val) + "\n" +
-            "json.dump(d1, open(p1, 'w'), indent=2)\n"
+            "for dir in [os.environ.get('CARBON_CONFIG_DIR', os.path.expanduser('~/.config/carbon')), os.path.expanduser('~/.config/hypr')]:\n" +
+            "    os.makedirs(dir, exist_ok=True)\n" +
+            "    p1 = os.path.join(dir, 'carbon-bar-position.json')\n" +
+            "    try:\n" +
+            "        d1 = json.load(open(p1)) if os.path.exists(p1) else {}\n" +
+            "    except Exception:\n" +
+            "        d1 = {}\n" +
+            "    d1['" + key + "'] = " + JSON.stringify(val) + "\n" +
+            "    json.dump(d1, open(p1, 'w'), indent=2)\n"
         Quickshell.execDetached(["python3", "-c", script])
     }
 
@@ -1614,6 +1629,8 @@ Item {
                                                                 Theme.workspaceActiveGlyph = modelData.active
                                                                 Theme.workspaceInactiveGlyph = modelData.inactive
                                                             }
+                                                            root.saveBottomSetting("workspaceActiveGlyph", modelData.active)
+                                                            root.saveBottomSetting("workspaceInactiveGlyph", modelData.inactive)
                                                         }
                                                     }
                                                 }
@@ -1714,6 +1731,7 @@ Item {
                                                             if (typeof Theme !== "undefined") {
                                                                 Theme.distroIcon = modelData.icon
                                                             }
+                                                            root.saveBottomSetting("distroIcon", modelData.icon)
                                                         }
                                                     }
                                                 }
@@ -2048,7 +2066,10 @@ Item {
                                             to: 48
                                             value: root.previewNotchHeight
                                             unit: "px"
-                                            onMoved: function(v) { root.previewNotchHeight = Math.round(v) }
+                                            onMoved: function(v) {
+                                                root.previewNotchHeight = Math.round(v)
+                                                root.saveBottomSetting("notchHeight", Math.round(v))
+                                            }
                                         }
 
                                         RazorWireSlider {
@@ -2058,7 +2079,10 @@ Item {
                                             to: 20
                                             value: root.previewEarRadius
                                             unit: "px"
-                                            onMoved: function(v) { root.previewEarRadius = Math.round(v) }
+                                            onMoved: function(v) {
+                                                root.previewEarRadius = Math.round(v)
+                                                root.saveBottomSetting("notchEarRadius", Math.round(v))
+                                            }
                                         }
 
                                         RazorWireSlider {
@@ -2068,7 +2092,10 @@ Item {
                                             to: 24
                                             value: root.previewBottomRadius
                                             unit: "px"
-                                            onMoved: function(v) { root.previewBottomRadius = Math.round(v) }
+                                            onMoved: function(v) {
+                                                root.previewBottomRadius = Math.round(v)
+                                                root.saveBottomSetting("notchBottomRadius", Math.round(v))
+                                            }
                                         }
                                     }
                                 }
@@ -2112,7 +2139,11 @@ Item {
                                             to: 1.00
                                             value: root.previewNotchOpacity
                                             decimals: 2
-                                            onMoved: function(v) { root.previewNotchOpacity = v }
+                                            onMoved: function(v) {
+                                                root.previewNotchOpacity = v
+                                                root.saveBottomSetting("notchOpacity", Math.round(v * 100) / 100)
+                                                root.saveBottomSetting("shellOpacity", Math.round(v * 100) / 100)
+                                            }
                                         }
 
                                         RazorWireSlider {
@@ -2122,7 +2153,11 @@ Item {
                                             to: 24
                                             value: root.previewAppGap
                                             unit: "px"
-                                            onMoved: function(v) { root.previewAppGap = Math.round(v) }
+                                            onMoved: function(v) {
+                                                root.previewAppGap = Math.round(v)
+                                                root.saveBottomSetting("appGap", Math.round(v))
+                                                root.saveBottomSetting("notchAppGap", Math.round(v))
+                                            }
                                         }
 
                                         // Blur Toggle
@@ -2168,7 +2203,11 @@ Item {
                                                 MouseArea {
                                                     anchors.fill: parent
                                                     cursorShape: Qt.PointingHandCursor
-                                                    onClicked: root.previewBlur = !root.previewBlur
+                                                    onClicked: {
+                                                        root.previewBlur = !root.previewBlur
+                                                        root.saveBottomSetting("notchBlur", root.previewBlur)
+                                                        root.saveBottomSetting("shellBlur", root.previewBlur)
+                                                    }
                                                 }
                                             }
                                         }

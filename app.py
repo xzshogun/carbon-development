@@ -337,6 +337,38 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
         "Portability",
     )
 
+    # 5b. Verify Focus Mode (SUPER + K) & Rust Settings Hub (SUPER + SHIFT + C) feature completeness
+    focus_qml = SANDBOX_BASE / "quickshell" / "modules" / "FocusHUD.qml"
+    focus_txt = focus_qml.read_text() if focus_qml.exists() else ""
+    focus_features_ok = (
+        "internalFocusTimer" in focus_txt
+        and "brownAudioProc" in focus_txt
+        and "rainAudioProc" in focus_txt
+        and "addTask" in focus_txt
+        and "focus-tasks.json" in focus_txt
+    )
+    add_assertion(
+        "Focus Mode (SUPER + K) includes standalone QML timer, Rain & Brown Noise synthesis, and persistent task checklist",
+        focus_features_ok,
+        "Verified internalFocusTimer, brownAudioProc, rainAudioProc, addTask, and focus-tasks.json in FocusHUD.qml",
+        "Focus & Settings Hub",
+    )
+
+    hub_py = SANDBOX_BASE / "carbon" / "scripts" / "carbon-hub-daemon.py"
+    modes_qml = SANDBOX_BASE / "quickshell" / "modules" / "ModesTab.qml"
+    modes_txt = modes_qml.read_text() if modes_qml.exists() else ""
+    hub_features_ok = (
+        hub_py.exists()
+        and "carbon-mode-keybinds.sh" in modes_txt
+        and "saveBottomSetting(\"notchHeight\"" in modes_txt
+    )
+    add_assertion(
+        "Settings Hub (SUPER + SHIFT + C) includes /tmp/carbon-hub.sock fallback daemon, live mode keybind sync, and Notch geometry persistence",
+        hub_features_ok,
+        "Verified carbon-hub-daemon.py, carbon-mode-keybinds.sh sync, and Notch geometry/glyph persistence in ModesTab.qml",
+        "Focus & Settings Hub",
+    )
+
     # 6. Test Start Command (start.sh / carbon-start --dry-run)
     start_target_mode = "pill" if modes_to_test[-1] != "pill" else "notch"
     start_cmd = [

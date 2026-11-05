@@ -14,7 +14,10 @@ import json
 import os
 import subprocess
 import sys
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 CARBON_CONFIG_DIR = os.environ.get("CARBON_CONFIG_DIR", os.path.expanduser("~/.config/carbon"))
 HYPR_CONFIG_DIR = os.path.expanduser("~/.config/hypr")
@@ -127,6 +130,33 @@ def resolve_mode():
     return "dark"
 
 
+def resolve_scheme():
+    for i, arg in enumerate(sys.argv):
+        if arg in ("--scheme", "-s") and i + 1 < len(sys.argv):
+            raw = sys.argv[i + 1].lower().strip().replace(" ", "-")
+            if "mono" in raw:
+                return "monochrome"
+            if "express" in raw:
+                return "expressive"
+            if "fidel" in raw:
+                return "fidelity"
+            return "tonal-spot"
+    scheme_state = os.path.join(CARBON_CONFIG_DIR, "scheme_state")
+    if os.path.isfile(scheme_state):
+        try:
+            with open(scheme_state, "r", encoding="utf-8") as f:
+                raw = f.read().lower().strip().replace(" ", "-")
+            if "mono" in raw:
+                return "monochrome"
+            if "express" in raw:
+                return "expressive"
+            if "fidel" in raw:
+                return "fidelity"
+        except Exception:
+            pass
+    return "tonal-spot"
+
+
 def get_image_frame_for_analysis(src_path):
     """If the wallpaper is a video or gif, return a static frame path."""
     ext = os.path.splitext(src_path)[1].lower()
@@ -175,11 +205,11 @@ def is_monochrome_image(img_path):
     return False
 
 
-def extract_wallpaper_palette(img_path):
+def extract_wallpaper_palette(img_path, scheme="tonal-spot"):
     """Extract an intelligent Material You style palette from wallpaper using PIL."""
-    im = Image.open(img_path).convert("RGB")
-    small = im.resize((120, 120), Image.LANCZOS)
     try:
+        im = Image.open(img_path).convert("RGB")
+        small = im.resize((120, 120), Image.LANCZOS)
         raw = list(small.get_flattened_data()) if hasattr(small, "get_flattened_data") else list(small.getdata())
     except Exception:
         raw = []
@@ -205,20 +235,26 @@ def extract_wallpaper_palette(img_path):
         h_pri = sum(x[0] for x in samples) / len(samples)
         s_pri = sum(x[1] for x in samples) / len(samples)
 
-    # Accent (primary): High-legibility, vibrant dark mode color (L: 0.72)
-    sat = min(0.92, max(0.58, s_pri * 1.25))
+    if scheme == "expressive":
+        h_pri = (h_pri + 0.08) % 1.0
+        sat = min(0.98, max(0.75, s_pri * 1.45))
+        hue_shift = 0.25
+    elif scheme == "fidelity":
+        sat = min(0.95, max(0.45, s_pri * 1.05))
+        hue_shift = 0.10
+    else:
+        sat = min(0.92, max(0.58, s_pri * 1.25))
+        hue_shift = 0.15
+
     r, g, b = colorsys.hls_to_rgb(h_pri, 0.72, sat)
     accent_hex = hexs((r * 255, g * 255, b * 255))
 
-    # AccentLit (primary_container): Lighter pastel tint (L: 0.86)
-    r, g, b = colorsys.hls_to_rgb(h_pri, 0.86, min(0.85, sat * 0.90))
+    r, g, b = colorsys.hls_to_rgb(h_pri, 0.86, min(0.88, sat * 0.90))
     accent_lit_hex = hexs((r * 255, g * 255, b * 255))
 
-    # OnAccent (on_primary): Dark text on bright accent
     lum = get_luminance(accent_hex)
     on_accent_hex = "#101116" if lum > 0.45 else "#FFFFFF"
 
-    # Surface & background subtly tinted with wallpaper's dominant hue
     bg_sat = min(0.32, max(0.18, sat * 0.38))
     r, g, b = colorsys.hls_to_rgb(h_pri, 0.08, bg_sat)
     bg_hex = hexs((r * 255, g * 255, b * 255))
@@ -228,13 +264,11 @@ def extract_wallpaper_palette(img_path):
 
     fg_hex = "#E6E4F0"
 
-    # Outline
     r, g, b = colorsys.hls_to_rgb(h_pri, 0.28, min(0.30, bg_sat * 0.90))
     outline_hex = hexs((r * 255, g * 255, b * 255))
 
-    # Tertiary: Harmonious secondary hue (+55° hue shift) for vibrant multi-color accents
-    h_ter = (h_pri + 0.15) % 1.0
-    r, g, b = colorsys.hls_to_rgb(h_ter, 0.76, min(0.85, sat * 0.90))
+    h_ter = (h_pri + hue_shift) % 1.0
+    r, g, b = colorsys.hls_to_rgb(h_ter, 0.76, min(0.88, sat * 0.90))
     tertiary_hex = hexs((r * 255, g * 255, b * 255))
 
     return {
@@ -351,10 +385,11 @@ def pick_matugen_source_color_index(img_path):
         return 0
 
 
-def extract_matugen_palette(img_path, mode="dark", color_index=None):
+def extract_matugen_palette(img_path, mode="dark", color_index=None, scheme="tonal-spot"):
     try:
         env = {**os.environ, "MATUGEN_NO_HOOK": "1"}
-        cmd = ["matugen", "image", "--prefer", "saturation", "-j", "hex", "-m", mode]
+        mat_type = f"scheme-{scheme}" if not scheme.startswith("scheme-") else scheme
+        cmd = ["matugen", "image", "-t", mat_type, "--prefer", "saturation", "-j", "hex", "-m", mode]
         if color_index is not None:
             cmd.extend(["--source-color-index", str(color_index)])
         cmd.append(img_path)
@@ -405,13 +440,14 @@ def extract_matugen_palette(img_path, mode="dark", color_index=None):
 
 def main():
     mode = resolve_mode()
+    scheme = resolve_scheme()
     src_wp = resolve_source_wallpaper()
     if not src_wp or not os.path.exists(src_wp):
         print("theme-mk: no valid wallpaper source found", file=sys.stderr)
         sys.exit(0)
 
     analysis_img = get_image_frame_for_analysis(src_wp)
-    is_mono = is_monochrome_image(analysis_img)
+    is_mono = (scheme == "monochrome") or is_monochrome_image(analysis_img)
     wp_lower = os.path.basename(src_wp).lower()
     if "carbon" in wp_lower or "black" in wp_lower or "mono" in wp_lower:
         is_mono = True
@@ -446,7 +482,7 @@ def main():
             pass
     else:
         best_color_idx = pick_matugen_source_color_index(analysis_img)
-        m3 = extract_matugen_palette(analysis_img, mode=mode, color_index=best_color_idx)
+        m3 = extract_matugen_palette(analysis_img, mode=mode, color_index=best_color_idx, scheme=scheme)
         if m3:
             accent_hex = m3["primary"]
             accent_lit_hex = m3["primaryContainer"]
@@ -458,7 +494,8 @@ def main():
             outline_hex = m3["outline"]
             try:
                 env = {**os.environ, "MATUGEN_NO_HOOK": "1"}
-                cmd_render = ["matugen", "image", "--prefer", "saturation", "-m", mode]
+                mat_type = f"scheme-{scheme}" if not scheme.startswith("scheme-") else scheme
+                cmd_render = ["matugen", "image", "-t", mat_type, "--prefer", "saturation", "-m", mode]
                 if best_color_idx is not None:
                     cmd_render.extend(["--source-color-index", str(best_color_idx)])
                 cmd_render.append(src_wp)
@@ -467,7 +504,7 @@ def main():
                 pass
 
         else:
-            pal = extract_wallpaper_palette(analysis_img)
+            pal = extract_wallpaper_palette(analysis_img, scheme=scheme)
             accent_hex = pal["accent"]
             accent_lit_hex = pal["accentLit"]
             tertiary_hex = pal["tertiary"]
@@ -495,6 +532,7 @@ def main():
         "err": ERR,
         "isDark": (mode == "dark"),
         "mode": mode,
+        "scheme": scheme,
     }
 
     # Write theme.json directly to both carbon and hypr configs (preserving inode for inotify)
@@ -503,6 +541,34 @@ def main():
         try:
             with open(json_p, "w", encoding="utf-8") as f:
                 json.dump(palette_dict, f, indent=2)
+        except Exception:
+            pass
+
+    # Also write colors.json & colors.conf for SettingsHub / carbon-hub-daemon compatibility
+    colors_json_data = {
+        "colors": {
+            mode: {
+                "primary": accent_hex,
+                "secondary": (m3.get("secondary", tertiary_hex) if m3 else tertiary_hex),
+                "tertiary": tertiary_hex,
+                "surface": bg_hex,
+                "surface_container": bg_alt_hex,
+            }
+        }
+    }
+    for cfg_d in [CARBON_CONFIG_DIR, HYPR_CONFIG_DIR]:
+        os.makedirs(cfg_d, exist_ok=True)
+        try:
+            with open(os.path.join(cfg_d, "colors.json"), "w", encoding="utf-8") as f:
+                json.dump(colors_json_data, f, indent=2)
+            with open(os.path.join(cfg_d, "colors.conf"), "w", encoding="utf-8") as f:
+                f.write(
+                    f"$primary = rgb({accent_hex.lstrip('#')})\n"
+                    f"$secondary = rgb({(m3.get('secondary', tertiary_hex) if m3 else tertiary_hex).lstrip('#')})\n"
+                    f"$tertiary = rgb({tertiary_hex.lstrip('#')})\n"
+                    f"$surface = rgb({bg_hex.lstrip('#')})\n"
+                    f"$surface_container = rgb({bg_alt_hex.lstrip('#')})\n"
+                )
         except Exception:
             pass
 

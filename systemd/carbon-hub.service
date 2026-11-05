@@ -1,12 +1,14 @@
 [Unit]
-Description=Carbon Settings Hub Daemon (Rust IPC)
+Description=Carbon Hub Daemon — Zero-Latency Wayland & Hyprland IPC Controller
+Documentation=https://github.com/xzshogun/carbon-development
 After=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/carbon-hub-daemon
+ExecStart=/bin/sh -c 'if [ -x "$HOME/.local/bin/carbon-hub-daemon" ]; then exec "$HOME/.local/bin/carbon-hub-daemon"; elif command -v carbon-hub-daemon >/dev/null 2>&1; then exec carbon-hub-daemon; else exec python3 "${CARBON_CONFIG_DIR:-$HOME/.config/carbon}/scripts/carbon-hub-daemon.py"; fi'
 Restart=always
-RestartSec=1
+RestartSec=2
+Environment=RUST_LOG=info
 
 [Install]
 WantedBy=default.target

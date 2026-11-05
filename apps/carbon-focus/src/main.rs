@@ -201,13 +201,24 @@ impl Engine {
     fn play_noise(&mut self, kind: &str) {
         self.stop_noise();
         let home = std::env::var("HOME").unwrap_or_default();
-        let rain_mp3 = format!("{}/.config/carbon/assets/rain.mp3", home);
+        let config_dir = std::env::var("CARBON_CONFIG_DIR").unwrap_or_else(|_| format!("{}/.config/carbon", home));
+        let mut rain_mp3 = format!("{}/assets/rain.mp3", config_dir);
+        if !std::path::Path::new(&rain_mp3).exists() {
+            rain_mp3 = format!("{}/.local/share/quickshell/carbon/assets/rain.mp3", home);
+        }
         let child = if kind == "rain" && std::path::Path::new(&rain_mp3).exists() {
             Command::new("mpv")
-                .args(["--loop=inf", "--no-video", &rain_mp3])
+                .args(["--loop=inf", "--no-video", "--volume=65", &rain_mp3])
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()
+                .or_else(|_| {
+                    Command::new("ffplay")
+                        .args(["-nodisp", "-loop", "0", "-loglevel", "quiet", &rain_mp3])
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
                 .ok()
         } else if Command::new("play").arg("-h").output().is_ok() {
             let synth_arg = if kind == "rain" { "pinknoise" } else { "brownnoise" };
@@ -218,16 +229,28 @@ impl Engine {
                 .spawn()
                 .ok()
         } else {
-            let lavfi_arg = if kind == "rain" {
-                "av://lavfi:anoisesrc=c=pink:r=48000:a=0.05,lowpass=f=1200"
+            let lavfi_complex = if kind == "rain" {
+                "--lavfi-complex=[anoisesrc=c=pink:r=48000:a=0.06[ao]]"
             } else {
-                "av://lavfi:anoisesrc=c=brown:r=48000:a=0.05"
+                "--lavfi-complex=[anoisesrc=c=brown:r=48000:a=0.08[ao]]"
+            };
+            let ffplay_lavfi = if kind == "rain" {
+                "anoisesrc=c=pink:r=48000:a=0.06"
+            } else {
+                "anoisesrc=c=brown:r=48000:a=0.08"
             };
             Command::new("mpv")
-                .args(["--no-video", lavfi_arg])
+                .args(["--no-video", lavfi_complex])
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()
+                .or_else(|_| {
+                    Command::new("ffplay")
+                        .args(["-nodisp", "-autoexit", "-loglevel", "quiet", "-f", "lavfi", ffplay_lavfi])
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
                 .ok()
         };
 

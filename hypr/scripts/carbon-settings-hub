@@ -3,15 +3,18 @@
 CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
 BIN_DIR="${HOME}/.local/bin"
 
-# Ensure the Rust backend daemon (carbon-hub-daemon) is running for Settings Hub
+# Ensure the backend daemon (Rust carbon-hub-daemon or Python fallback) is listening on /tmp/carbon-hub.sock
 if [ ! -S "/tmp/carbon-hub.sock" ]; then
-    if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-hub.service >/dev/null 2>&1; then
-        systemctl --user start carbon-hub.service 2>/dev/null || true
-    elif [ -x "$BIN_DIR/carbon-hub-daemon" ]; then
+    if [ -x "$BIN_DIR/carbon-hub-daemon" ]; then
         nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
     elif command -v carbon-hub-daemon >/dev/null 2>&1; then
         nohup carbon-hub-daemon >/dev/null 2>&1 &
+    elif [ -f "$CONFIG_DIR/scripts/carbon-hub-daemon.py" ]; then
+        nohup python3 "$CONFIG_DIR/scripts/carbon-hub-daemon.py" >/dev/null 2>&1 &
+    elif [ -f "${HOME}/.config/hypr/scripts/carbon-hub-daemon.py" ]; then
+        nohup python3 "${HOME}/.config/hypr/scripts/carbon-hub-daemon.py" >/dev/null 2>&1 &
     fi
+    sleep 0.15
 fi
 
 if [ -x "$CONFIG_DIR/scripts/carbon-ipc.sh" ]; then

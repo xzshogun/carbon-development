@@ -660,10 +660,9 @@ Item {
                         }
                     }
 
-                    // Feature 3: Material-3 Transitions (Dimmed Opacity 0.40 Placeholder)
+                    // Feature 3: Material-3 Transitions
                     RowLayout {
                         Layout.fillWidth: true
-                        opacity: 0.40
 
                         Text {
                             text: "Material-3 Transitions"
@@ -675,8 +674,11 @@ Item {
                         }
 
                         TerminalStatusBadge {
-                            checked: false
-                            interactive: false
+                            checked: root.m3Transitions
+                            onClicked: {
+                                root.m3Transitions = !root.m3Transitions
+                                root.sendHub({ "module": "appearance", "action": "set_m3_transitions", "value": root.m3Transitions })
+                            }
                         }
                     }
                 }

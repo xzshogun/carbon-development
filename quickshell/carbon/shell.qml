@@ -1890,10 +1890,11 @@ ShellRoot {
                         root.notchBlur = root.shellBlur
                         root.minimalBlur = root.shellBlur
                     }
-                    else if (cmd === "reload-config" || cmd === "apply-settings" || cmd === "reload-lock-config") {
+                    else if (cmd === "reload-config" || cmd === "apply-settings" || cmd === "reload-lock-config" || cmd === "theme-reload") {
                         root.applyBarPos(barPosFile.text())
                         root.reloadBarMode()
                         Theme.reloadShellOpacity()
+                        Theme.reload(true)
                         root.reloadLauncherConfig()
                         LockState.reloadConfig()
                     }
