@@ -447,7 +447,7 @@ class InstallerWindow(Adw.ApplicationWindow):
             self._set_status("Creating safety backup...", 0.1)
             self._log("==> Creating safety backup...")
             ts = time.strftime("%Y%m%d_%H%M%S")
-            backup_dir = Path.home() / f".config/carbon_backup_{ts}"
+            backup_dir = (SANDBOX / f"backups/carbon_backup_{ts}") if DRY_RUN else (Path.home() / f".config/carbon_backup_{ts}")
             if CONFIG_DIR.exists():
                 shutil.copytree(CONFIG_DIR, backup_dir / "carbon_config", dirs_exist_ok=True)
                 self._log(f"Backed up {CONFIG_DIR} to {backup_dir}")
@@ -457,17 +457,31 @@ class InstallerWindow(Adw.ApplicationWindow):
             CONFIG_DIR.mkdir(parents=True, exist_ok=True)
             (CONFIG_DIR / "scripts").mkdir(parents=True, exist_ok=True)
             (CONFIG_DIR / "configs").mkdir(parents=True, exist_ok=True)
+            (HYPR_DIR / "scripts").mkdir(parents=True, exist_ok=True)
+            (HYPR_DIR / "configs").mkdir(parents=True, exist_ok=True)
 
             (CONFIG_DIR / "repo_path").write_text(str(REPO_DIR))
+            staging_server = "https://ais-pre-clqdsggkf7wyqbb7b7z654-900258437217.asia-east1.run.app"
+            dev_github_url = "https://github.com/xzshogun/carbon-development.git"
+            repo_meta = {
+                "channel": "dev",
+                "remoteUrl": os.environ.get("CARBON_REMOTE_URL", dev_github_url),
+                "tarballUrl": os.environ.get("CARBON_TARBALL_URL", f"{staging_server}/carbon-shell-dev.tar.gz"),
+                "githubDevUrl": dev_github_url,
+                "branch": "main",
+                "localPath": str(REPO_DIR)
+            }
+            (CONFIG_DIR / "carbon-repo.json").write_text(json.dumps(repo_meta, indent=2))
 
-            # Runtime scripts
+            # Runtime scripts (deploy to carbon/scripts and mirror to hypr/scripts)
             scripts_src = REPO_DIR / "hypr/scripts"
             if scripts_src.exists():
                 for s in scripts_src.iterdir():
-                    dst = CONFIG_DIR / "scripts" / s.name
                     if s.is_file():
-                        shutil.copy2(s, dst)
-                        dst.chmod(0o755)
+                        for dst_dir in [CONFIG_DIR / "scripts", HYPR_DIR / "scripts"]:
+                            dst = dst_dir / s.name
+                            shutil.copy2(s, dst)
+                            dst.chmod(0o755)
 
             # Hyprland mode templates & configs
             configs_src = REPO_DIR / "hypr/configs"
@@ -475,6 +489,7 @@ class InstallerWindow(Adw.ApplicationWindow):
                 for c in configs_src.iterdir():
                     if c.is_file():
                         shutil.copy2(c, CONFIG_DIR / "configs" / c.name)
+                        shutil.copy2(c, HYPR_DIR / "configs" / c.name)
 
             # JSON state files
             for j in (REPO_DIR / "hypr").glob("*.json"):
@@ -495,41 +510,59 @@ class InstallerWindow(Adw.ApplicationWindow):
                     shutil.copy2(src, dst)
 
             # Selected bar mode
+            norm_bar_mode = "nucleus" if self.shell_mode == "vanish" else self.shell_mode
             mode_data = {
-                "mode": self.shell_mode,
-                "islandStyle": "minimal" if self.shell_mode == "minimal_notch" else self.shell_mode,
+                "mode": norm_bar_mode,
+                "islandStyle": "minimal" if norm_bar_mode == "minimal_notch" else norm_bar_mode,
                 "islandPersistent": True,
                 "wallpaperAnimation": "cinematic",
                 "wallpaperDuration": 800,
                 "nucleus": {"transition": True, "transitionWord": "Wooshh!!"}
             }
             (CONFIG_DIR / "carbon-bar-mode.json").write_text(json.dumps(mode_data, indent=2))
+            (HYPR_DIR / "carbon-bar-mode.json").write_text(json.dumps(mode_data, indent=2))
 
-            # Generate carbon.conf
+            # Generate carbon.conf with externalized mode keybinds
             kb_target = "keybinds-shell-only.conf" if self.keybind_mode == "keep" else "keybinds.conf"
             carbon_conf_content = f"""env = CARBON_CONFIG_DIR,$HOME/.config/carbon
 env = PATH,$HOME/.local/bin:$PATH
 
 source = ~/.config/carbon/colors.conf
 source = ~/.config/carbon/windowrules.conf
+source = ~/.config/carbon/blur-exceptions.conf
+source = ~/.config/carbon/power.conf
 source = ~/.config/carbon/{kb_target}
-source = ~/.config/carbon/configs/vanish-keybinds.conf
+source = ~/.config/carbon/configs/current-mode-keybinds.conf
 
 cursor {{
     no_warps = true
 }}
 
+general {{
+    snap {{
+        enabled = true
+    }}
+}}
+
 exec-once = systemctl --user start carbon-quickshell.service
 exec-once = bash -c 'wl-paste --watch cliphist store'
 exec-once = bash -c 'wl-paste --type image --watch cliphist store'
+exec-once = hypridle -c ~/.config/carbon/hypridle.conf
+exec-once = ~/.config/carbon/scripts/portal.sh
+exec-once = ~/.config/carbon/scripts/carbon-audio-init.sh
+exec-once = ~/.config/carbon/scripts/carbon-snap-top.sh
 """
             (CONFIG_DIR / "carbon.conf").write_text(carbon_conf_content)
 
-            self._set_status("Deploying Quickshell assets...", 0.5)
+            self._set_status("Deploying Quickshell & shell assets...", 0.5)
             self._log("==> Copying Quickshell components to ~/.local/share/quickshell/carbon...")
             qs_src = REPO_DIR / "quickshell/carbon"
             if qs_src.exists():
                 shutil.copytree(qs_src, QUICKSHELL_DIR, dirs_exist_ok=True)
+
+            assets_src = REPO_DIR / "assets"
+            if assets_src.exists():
+                shutil.copytree(assets_src, CONFIG_DIR / "assets", dirs_exist_ok=True)
 
             self._set_status("Installing fonts...", 0.6)
             fonts_src = REPO_DIR / "fonts"
@@ -537,17 +570,29 @@ exec-once = bash -c 'wl-paste --type image --watch cliphist store'
                 FONTS_DIR.mkdir(parents=True, exist_ok=True)
                 for f in fonts_src.glob("*.ttf"):
                     shutil.copy2(f, FONTS_DIR / f.name)
-                if shutil.which("fc-cache"):
+                if not DRY_RUN and shutil.which("fc-cache"):
                     subprocess.run(["fc-cache", "-f"], capture_output=True)
 
             self._set_status("Installing CLI binaries...", 0.7)
             BIN_DIR.mkdir(parents=True, exist_ok=True)
-            for bin_name in ["carbon-config-editor", "carbon-pomodoro", "update.sh"]:
+            for bin_name in ["carbon-config-editor", "carbon-settings-hub", "carbon-pomodoro", "update.sh", "start.sh", "uninstall.sh"]:
                 if bin_name == "update.sh":
                     src = REPO_DIR / "update.sh"
                     if src.exists():
-                        shutil.copy2(src, BIN_DIR / "carbon-update")
-                        (BIN_DIR / "carbon-update").chmod(0o755)
+                        for dst_name in ["carbon-update", "carbon-shell-update"]:
+                            shutil.copy2(src, BIN_DIR / dst_name)
+                            (BIN_DIR / dst_name).chmod(0o755)
+                elif bin_name == "start.sh":
+                    src = REPO_DIR / "start.sh"
+                    if src.exists():
+                        for dst_name in ["carbon-start", "carbon-shell"]:
+                            shutil.copy2(src, BIN_DIR / dst_name)
+                            (BIN_DIR / dst_name).chmod(0o755)
+                elif bin_name == "uninstall.sh":
+                    src = REPO_DIR / "uninstall.sh"
+                    if src.exists():
+                        shutil.copy2(src, BIN_DIR / "carbon-uninstall")
+                        (BIN_DIR / "carbon-uninstall").chmod(0o755)
                 else:
                     src = CONFIG_DIR / "scripts" / bin_name
                     if src.exists():
@@ -562,13 +607,14 @@ exec-once = bash -c 'wl-paste --type image --watch cliphist store'
                 (BIN_DIR / f"{base}.sh").chmod(0o755)
 
             self._set_status("Setting up systemd service...", 0.8)
-            srv = REPO_DIR / "systemd/carbon-quickshell.service"
-            if srv.exists():
-                SYSTEMD_DIR.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(srv, SYSTEMD_DIR / srv.name)
-                if shutil.which("systemctl"):
-                    subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
-                    subprocess.run(["systemctl", "--user", "enable", "carbon-quickshell.service"], capture_output=True)
+            SYSTEMD_DIR.mkdir(parents=True, exist_ok=True)
+            for srv_name in ["carbon-quickshell.service", "carbon-hub.service"]:
+                srv = REPO_DIR / "systemd" / srv_name
+                if srv.exists():
+                    shutil.copy2(srv, SYSTEMD_DIR / srv.name)
+            if not DRY_RUN and shutil.which("systemctl"):
+                subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
+                subprocess.run(["systemctl", "--user", "enable", "carbon-quickshell.service"], capture_output=True)
 
             self._set_status("Integrating with Hyprland...", 0.85)
             HYPR_DIR.mkdir(parents=True, exist_ok=True)
@@ -595,20 +641,25 @@ exec-once = bash -c 'wl-paste --type image --watch cliphist store'
                 if wp_src.exists() and not wp_dst.exists():
                     shutil.copy2(wp_src, wp_dst)
                 if wp_dst.exists():
-                    wp_link = CONFIG_DIR / "current_wallpaper"
-                    if wp_link.is_symlink() or wp_link.exists():
-                        wp_link.unlink()
-                    wp_link.symlink_to(wp_dst)
+                    shutil.copy2(wp_dst, CONFIG_DIR / "current_wallpaper")
+                    shutil.copy2(wp_dst, HYPR_DIR / "current_wallpaper")
                     (CONFIG_DIR / "current_wallpaper_path").write_text(str(wp_dst))
 
                 theme_script = CONFIG_DIR / "scripts/theme-mk.py"
-                if theme_script.exists():
-                    subprocess.run([sys.executable, str(theme_script)], capture_output=True)
+                if not DRY_RUN and theme_script.exists():
+                    env = {**os.environ, "CARBON_CONFIG_DIR": str(CONFIG_DIR)}
+                    subprocess.run([sys.executable, str(theme_script), str(wp_dst)], capture_output=True, env=env)
 
             # Generate initial mode keybinds
             mode_script = CONFIG_DIR / "scripts/carbon-mode-keybinds.sh"
             if mode_script.exists():
-                subprocess.run(["bash", str(mode_script), self.shell_mode], capture_output=True)
+                env = {
+                    **os.environ,
+                    "CARBON_CONFIG_DIR": str(CONFIG_DIR),
+                    "CARBON_HYPR_DIR": str(HYPR_DIR),
+                    "CARBON_NO_RELOAD": "1" if DRY_RUN else "0"
+                }
+                subprocess.run(["bash", str(mode_script), self.shell_mode], capture_output=True, env=env)
 
             self._set_status("Done!", 1.0)
             self._log("==> Installation finished successfully.")

@@ -904,7 +904,7 @@ ShellRoot {
     property bool screenshotFreezeActive: false
     onBarModeChanged: {
         console.log("[BAR-MODE CHANGED] New root.barMode is now: " + root.barMode)
-        Quickshell.execDetached(["bash", root.home + "/.config/hypr/scripts/carbon-mode-keybinds.sh", root.barMode])
+        Quickshell.execDetached(["bash", root.carbonConfigDir + "/scripts/carbon-mode-keybinds.sh", root.barMode])
     }
 
     FileView {
@@ -990,7 +990,7 @@ ShellRoot {
                 }
                 if (d.mode) {
                     var target = String(d.mode).toLowerCase()
-                    if (target === "three_islands" || target === "pill") target = "notch"
+                    if (target === "three_islands") target = "notch"
                     if (target === "vanish") target = "nucleus"
                     if (target === "island") target = "notch"
                     if (target === "minimal") target = "minimal_notch"
@@ -1028,7 +1028,7 @@ ShellRoot {
         console.log("[BAR-MODE] switchBarMode called with: " + m)
         if (!m) return
         m = String(m).toLowerCase()
-        if (m === "three_islands" || m === "pill") m = "notch"
+        if (m === "three_islands") m = "notch"
         if (m === "vanish") m = "nucleus"
         if (m === "island") m = "notch"
         if (m === "minimal") m = "minimal_notch"

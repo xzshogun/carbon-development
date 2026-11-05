@@ -112,7 +112,7 @@ Item {
     property string centerSelectedNote: "Project Notes // Antigravity"
     property var centerClipboardItems: [
         { text: "git checkout -b feat/panels-canvas-studio", time: "2m ago" },
-        { text: "https://github.com/xzshogun/carbon-shell", time: "14m ago" },
+        { text: "https://github.com/xzshogun/carbon-development", time: "14m ago" },
         { text: "hyprctl dispatch workspace 1", time: "1h ago" }
     ]
 

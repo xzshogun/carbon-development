@@ -1,0 +1,11 @@
+{
+  "name": "carbon-shell-sandbox-auditor",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "python3 app.py",
+    "build": "python3 -m py_compile app.py install-gui.py hypr/scripts/theme-mk.py hypr/scripts/carbon-config-editor.py && bash -n install.sh start.sh uninstall.sh update.sh carbon-update hypr/scripts/carbon-mode-keybinds.sh",
+    "lint": "python3 -m py_compile app.py install-gui.py hypr/scripts/theme-mk.py hypr/scripts/carbon-config-editor.py && bash -n install.sh start.sh uninstall.sh update.sh carbon-update hypr/scripts/carbon-mode-keybinds.sh",
+    "start": "python3 app.py"
+  }
+}

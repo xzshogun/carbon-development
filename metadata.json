@@ -1,0 +1,5 @@
+{
+  "name": "Carbon Shell Sandbox & Architecture Auditor",
+  "description": "Interactive sandbox test runner, installer/updater verifier, and isolated per-mode keybind inspector for Carbon Shell (Hyprland + Quickshell).",
+  "requestFramePermissions": []
+}

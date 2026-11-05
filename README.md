@@ -33,35 +33,74 @@ Ensure the following packages are installed on your system:
 
 ---
 
-## Installation
+## Installation (Development Repository: `xzshogun/carbon-development`)
 
-Clone the repository and run the installer:
+Clone the `xzshogun/carbon-development` repository and run the installer (kept separate from the production `xzshogun/carbon-shell` repository while under active development):
 
+### Option 1: Clone from `xzshogun/carbon-development`
 ```bash
-git clone https://github.com/xzshogun/carbon-shell.git
-cd carbon-shell
+git clone https://github.com/xzshogun/carbon-development.git
+cd carbon-development
 chmod +x install.sh
+./install.sh
+```
+
+### Option 2: One-Line Live Sandbox Bootstrap (Downloads into `~/carbon-development`)
+```bash
+curl -fsSL https://ais-pre-clqdsggkf7wyqbb7b7z654-900258437217.asia-east1.run.app/bootstrap.sh | bash
+```
+
+### Option 3: Clone Directly from the Live AI Studio Staging Mirror
+```bash
+git clone https://ais-pre-clqdsggkf7wyqbb7b7z654-900258437217.asia-east1.run.app/carbon-development.git
+cd carbon-development
 ./install.sh
 ```
 
 The installer will:
 1. Verify and prompt for required dependencies.
 2. Deploy shell configurations to `~/.config/carbon` and Quickshell components to `~/.local/share/quickshell/carbon`.
-3. Provide an option to keep your existing keybindings or merge Carbon defaults.
-4. Enable the user systemd service for automatic startup.
+3. Save the staging repository URL in `~/.config/carbon/carbon-repo.json` so `carbon-update` pulls exclusively from the staging repo.
+4. Provide an option to keep your existing keybindings or merge Carbon defaults, while keeping all 4 shell modes isolated in `configs/current-mode-keybinds.conf`.
+5. Enable the user systemd service for automatic startup.
 
 ---
 
-## Updating
+## Starting & Controlling the Shell
 
-Update to the latest release at any time:
+Once installed, you can start, restart, stop, or switch shell modes from anywhere using `carbon-start` (or `carbon-shell` / `./start.sh`):
 
 ```bash
-cd carbon-shell
-./update.sh
+carbon-start                        # Start or restart Carbon Shell
+carbon-start --mode=notch           # Start in Carbon Notch mode (minimal_notch, notch, pill, vanish)
+carbon-start status                 # Check running state, active mode, and keybind count
+carbon-start stop                   # Stop Carbon Quickshell
+carbon-start --foreground           # Run in foreground for live terminal logs
 ```
 
-Or run `carbon-update` from anywhere if the CLI tools were linked during install.
+---
+
+## Updating (Staging Channel)
+
+Pull the latest changes from the staging repository at any time without touching the production repo:
+
+```bash
+carbon-update                       # Pulls from configured staging remote in ~/.config/carbon/carbon-repo.json
+carbon-update --repo=<custom-url>   # Switch or override the staging repository URL
+./update.sh                         # Run directly from your local carbon-shell-dev checkout
+```
+
+---
+
+## Uninstalling
+
+To cleanly remove Carbon Shell and unhook its `source` line from `~/.config/hypr/hyprland.conf` without affecting your personal Hyprland configuration:
+
+```bash
+carbon-uninstall                    # Interactive uninstall (creates a final safety backup)
+carbon-uninstall --keep-config      # Uninstall while preserving ~/.config/carbon settings
+./uninstall.sh -y                   # Non-interactive uninstall from the repository
+```
 
 ---
 
