@@ -1,0 +1,12 @@
+{
+  "edge": "top",
+  "leftAlign": "left",
+  "centerAlign": "center",
+  "rightAlign": "right",
+  "leftEdge": "top",
+  "centerEdge": "top",
+  "rightEdge": "top",
+  "mainBarEdge": "top",
+  "musicBarEdge": "top",
+  "musicBarContent": "both"
+}

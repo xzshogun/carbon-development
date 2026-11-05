@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Carbon Settings Hub (New Material 3 App)
+CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
+exec "$CONFIG_DIR/scripts/carbon-ipc.sh" settings

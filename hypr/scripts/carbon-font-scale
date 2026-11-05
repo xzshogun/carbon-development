@@ -1,0 +1,52 @@
+#!/bin/sh
+# carbon-font-scale — change the whole OS text size from ONE number.
+#
+#   carbon-font-scale 1.15     set the text scale
+#   carbon-font-scale          show the current scale
+#
+# 1.0 = original design size. Updates the Carbon shell (the single fontScale
+# knob in Theme.qml) + GTK apps + kitty terminal, then restarts the shell.
+set -e
+
+THEME_FILES="$HOME/.local/share/quickshell/carbon/Singletons/Theme.qml $HOME/carbon-shell/quickshell/carbon/Singletons/Theme.qml"
+BASE=11   # baseline point size at scale 1.0
+
+scale="${1:-}"
+
+# No argument: print the current scale.
+if [ -z "$scale" ]; then
+    for f in $THEME_FILES; do
+        if [ -f "$f" ]; then
+            grep -oE 'fontScale:[[:space:]]*[0-9.]+' "$f" | head -1 | sed 's/.*fontScale:[[:space:]]*//'
+            break
+        fi
+    done
+    exit 0
+fi
+
+# --- 1. Carbon shell (single knob) ---------------------------------------
+for f in $THEME_FILES; do
+    [ -f "$f" ] || continue
+    sed -i -E "s/^([[:space:]]*readonly property real fontScale:[[:space:]]*).*/\1$scale/" "$f"
+done
+
+# --- 2. GTK apps ----------------------------------------------------------
+pt=$(python3 -c "print(round($BASE*$scale))")
+gsettings set org.gnome.desktop.interface font-name           "JetBrainsMono Nerd Font $pt"
+gsettings set org.gnome.desktop.interface monospace-font-name "JetBrainsMono Nerd Font $pt"
+gsettings set org.gnome.desktop.interface document-font-name  "JetBrainsMono Nerd Font $pt"
+
+for v in gtk-3.0 gtk-4.0; do
+    ini="$HOME/.config/$v/settings.ini"
+    [ -f "$ini" ] || continue
+    sed -i -E "s/^(gtk-font-name=JetBrainsMono Nerd Font ).*/\1$pt/" "$ini"
+    sed -i -E "s/^(gtk-monospace-font-name=JetBrainsMono Nerd Font ).*/\1$pt/" "$ini"
+done
+
+# --- 3. kitty terminal ----------------------------------------------------
+sed -i -E "s/^font_size.*/font_size        $pt.0/" "$HOME/.config/kitty/kitty.conf"
+
+# --- 4. reload the shell --------------------------------------------------
+systemctl --user restart carbon-quickshell.service 2>/dev/null || true
+
+echo "Font scale set to $scale  (shell, GTK and kitty all at ${pt}pt)."

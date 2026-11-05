@@ -1,0 +1,20 @@
+[Unit]
+Description=Carbon Quickshell Desktop Shell
+After=graphical-session.target
+StartLimitIntervalSec=30
+StartLimitBurst=10
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/carbon/carbon-shell.env
+Environment=CARBON_CONFIG_DIR=%h/.config/carbon
+Environment=QT_QPA_PLATFORM=wayland
+Environment=XDG_CURRENT_DESKTOP=Hyprland
+Environment=PATH=%h/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin
+Environment=MALLOC_CONF=narenas:2,background_thread:true,dirty_decay_ms:2000,muzzy_decay_ms:2000
+ExecStart=/usr/bin/bash -c 'for i in $(seq 1 50); do if [ -n "$WAYLAND_DISPLAY" ] && [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/$WAYLAND_DISPLAY" ]; then break; fi; sleep 0.2; done; if [ -x %h/.local/bin/quickshell ]; then exec %h/.local/bin/quickshell --config %h/.local/share/quickshell/carbon; elif command -v quickshell >/dev/null 2>&1; then exec quickshell --config %h/.local/share/quickshell/carbon; else exec /usr/bin/quickshell --config %h/.local/share/quickshell/carbon; fi'
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

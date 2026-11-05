@@ -1,0 +1,14 @@
+{
+  "visualizer": true,
+  "mediaOverlay": true,
+  "clock": true,
+  "heartbeat": true,
+  "batteryPopup": true,
+  "notificationPopup": true,
+  "transition": {
+    "lockSync": true,
+    "debug": false
+  },
+  "verciModeEnabled": true,
+  "cairoModeEnabled": true
+}

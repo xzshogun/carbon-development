@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+export GSK_RENDERER="cairo"
+CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
+SCRIPT="$CONFIG_DIR/scripts/carbon-config-editor.py"
+[ -f "$SCRIPT" ] || SCRIPT="$HOME/.config/hypr/scripts/carbon-config-editor.py"
+exec /usr/bin/python3 "$SCRIPT" "$@"

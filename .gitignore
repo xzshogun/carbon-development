@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.swp
+*~
+.DS_Store
+*.log
+/tmp/
+*.bak
+*.backup*
+scratch/
+target/

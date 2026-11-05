@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
+SCRIPT="$CONFIG_DIR/scripts/carbon-pomodoro.py"
+[ -f "$SCRIPT" ] || SCRIPT="$HOME/.config/hypr/scripts/carbon-pomodoro.py"
+PYVER=$(/usr/bin/python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "3.14")
+export PYTHONPATH="$HOME/.local/lib/python$PYVER/site-packages:$PYTHONPATH"
+exec /usr/bin/python3 "$SCRIPT" "$@"
+

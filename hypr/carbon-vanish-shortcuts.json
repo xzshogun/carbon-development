@@ -1,0 +1,72 @@
+{
+  "hub_toggle": {
+    "title": "Toggle Vanish Hub",
+    "desc": "Open or close central clock orb and radial satellites",
+    "category": "Primary Triggers",
+    "mods": "$mainMod",
+    "key": "Super_L",
+    "display_str": "SUPER",
+    "action": "toggle-hub",
+    "icon": "view-reveal-symbolic"
+  },
+  "app_search": {
+    "title": "Spotlight & App Search",
+    "desc": "Directly open Spotlight Command Palette with keyboard search focus",
+    "category": "Primary Triggers",
+    "mods": "$mainMod",
+    "key": "R",
+    "display_str": "SUPER + R",
+    "action": "spotlight",
+    "icon": "applications-system-symbolic"
+  },
+  "lyrics_toggle": {
+    "title": "Toggle Synced Lyrics",
+    "desc": "Morph bottom caption between calendar date and live lyrics",
+    "category": "Primary Triggers",
+    "mods": "$mainMod",
+    "key": "M",
+    "display_str": "SUPER + M",
+    "action": "lyrics",
+    "icon": "media-playback-start-symbolic"
+  },
+  "wallpaper_ring": {
+    "title": "Wallpaper Picker",
+    "desc": "Open Carbon Wallpaper Picker",
+    "category": "Primary Triggers",
+    "mods": "$mainMod",
+    "key": "W",
+    "display_str": "SUPER + W",
+    "action": "wallpaper",
+    "icon": "preferences-desktop-wallpaper-symbolic"
+  },
+  "focus_alerts": {
+    "title": "Focus Alerts Lobe",
+    "desc": "Directly bloom System Alerts & Notifications satellite",
+    "category": "Orbital Satellites",
+    "mods": "$mainMod",
+    "key": "A",
+    "display_str": "SUPER + A",
+    "action": "focus-alerts",
+    "icon": "preferences-system-notifications-symbolic"
+  },
+  "focus_connect": {
+    "title": "Focus Connect Lobe",
+    "desc": "Directly bloom Audio, Network, and Battery satellite",
+    "category": "Orbital Satellites",
+    "mods": "",
+    "key": "",
+    "display_str": "Unset",
+    "action": "focus-connect",
+    "icon": "network-wireless-symbolic"
+  },
+  "focus_spaces": {
+    "title": "Focus Spaces Lobe",
+    "desc": "Directly bloom Hyprland Workspaces satellite",
+    "category": "Orbital Satellites",
+    "mods": "",
+    "key": "",
+    "display_str": "Unset",
+    "action": "focus-spaces",
+    "icon": "view-grid-symbolic"
+  }
+}

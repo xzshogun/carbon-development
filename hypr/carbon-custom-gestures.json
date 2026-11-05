@@ -1,0 +1,8 @@
+{
+    "three_finger_swipe_up": "Workspaces & Windows Overview (sh ~/.config/hypr/scripts/carbon-ipc.sh toggle-overview)",
+    "three_finger_swipe_down": "Full Screen Screenshot (sh ~/.config/hypr/scripts/carbon-screenshot-full.sh)",
+    "three_finger_swipe_left": "Switch Workspace Backward (-1)",
+    "three_finger_swipe_right": "Switch Workspace Forward (+1)",
+    "four_finger_swipe_horizontal": "Continuous Workspace Swipe (Trackpad Desktop Paging)",
+    "four_finger_swipe_down": "Suspend and Hibernate System (systemctl suspend-then-hibernate)"
+}
