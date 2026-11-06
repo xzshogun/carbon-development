@@ -288,7 +288,7 @@ info "Initial shell mode: $BAR_JSON_MODE"
 
 # Deploy files to ~/.config/carbon (and mirror scripts/configs to ~/.config/hypr for compatibility)
 msg "Deploying configuration to $CONFIG_DIR..."
-mkdir -p "$CONFIG_DIR/scripts" "$CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/scripts"
+mkdir -p "$CONFIG_DIR/scripts" "$CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/scripts" "$HYPR_CONFIG_DIR/carbon"
 echo "$REPO_DIR" > "$CONFIG_DIR/repo_path"
 cat << EOF > "$CONFIG_DIR/carbon-repo.json"
 {
@@ -306,6 +306,16 @@ chmod +x "$CONFIG_DIR/scripts/"* 2>/dev/null || true
 
 cp -rf "$REPO_DIR/hypr/scripts/"* "$HYPR_CONFIG_DIR/scripts/" 2>/dev/null || true
 chmod +x "$HYPR_CONFIG_DIR/scripts/"* 2>/dev/null || true
+
+if [[ -d "$REPO_DIR/hypr/carbon" ]]; then
+    cp -rf "$REPO_DIR/hypr/carbon/"* "$HYPR_CONFIG_DIR/carbon/" 2>/dev/null || true
+fi
+if [[ -f "$REPO_DIR/hypr/hyprland.lua" ]]; then
+    cp -f "$REPO_DIR/hypr/hyprland.lua" "$HYPR_CONFIG_DIR/hyprland.lua.carbon" 2>/dev/null || true
+    if [[ -f "$HYPR_CONFIG_DIR/hyprland.lua" ]]; then
+        cp -f "$REPO_DIR/hypr/hyprland.lua" "$HYPR_CONFIG_DIR/hyprland.lua" 2>/dev/null || true
+    fi
+fi
 
 cp -rf "$REPO_DIR/hypr/configs/"* "$CONFIG_DIR/configs/"
 cp -rf "$REPO_DIR/hypr/configs/"* "$HYPR_CONFIG_DIR/configs/" 2>/dev/null || true

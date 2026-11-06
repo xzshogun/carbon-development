@@ -82,7 +82,7 @@ else
     echo "# Mode keybinds for $NORM_MODE (empty)" > "$TARGET_HYPR_CONF"
 fi
 
-# 2. Update Hyprland Lua format directly from the active mode .conf file (with clean fallback)
+# 2. Update Hyprland Lua format directly from the active mode .conf file AND default keybinds.conf
 python3 -c '
 import sys, os
 
@@ -91,14 +91,25 @@ conf_path = sys.argv[2]
 lua_files = [sys.argv[3], sys.argv[4]]
 home = os.environ.get("HOME", os.path.expanduser("~"))
 carbon_dir = os.environ.get("CARBON_CONFIG_DIR", os.path.join(home, ".config/carbon"))
+hypr_dir = os.environ.get("CARBON_HYPR_DIR", os.path.join(home, ".config/hypr"))
 
-lines_out = [f"-- Active Mode: {mode} (synchronized from {os.path.basename(conf_path) if conf_path else mode})"]
-
-if conf_path and os.path.exists(conf_path):
-    with open(conf_path, "r", encoding="utf-8", errors="ignore") as f:
+def convert_conf_to_lua(src_path, header_comment):
+    lines_out = [header_comment]
+    vars_map = {
+        "$mainMod": "SUPER",
+        "$terminal": "kitty",
+        "$fileManager": "nautilus",
+    }
+    if not src_path or not os.path.exists(src_path):
+        return "\n".join(lines_out) + "\n"
+    with open(src_path, "r", encoding="utf-8", errors="ignore") as f:
         for raw in f:
             s = raw.strip()
-            if not s or s.startswith("#") or s.startswith("$"):
+            if not s or s.startswith("#"):
+                continue
+            if s.startswith("$") and "=" in s:
+                k, v = s.split("=", 1)
+                vars_map[k.strip()] = v.strip()
                 continue
             if "=" not in s:
                 continue
@@ -106,10 +117,13 @@ if conf_path and os.path.exists(conf_path):
             btype = lhs.strip()
             if not btype.startswith("bind"):
                 continue
+            for vk, vv in vars_map.items():
+                rhs = rhs.replace(vk, vv)
+            rhs = rhs.replace("~/", home + "/")
             parts = [p.strip() for p in rhs.split(",")]
             if len(parts) < 3:
                 continue
-            mods = parts[0].replace("$mainMod", "SUPER").strip()
+            mods = parts[0].strip()
             key = parts[1].strip()
             disp = parts[2].strip()
             arg = ",".join(parts[3:]).strip() if len(parts) > 3 else ""
@@ -124,29 +138,58 @@ if conf_path and os.path.exists(conf_path):
                 opts.append("repeating = true")
             if "l" in btype[4:]:
                 opts.append("locked = true")
+            if "m" in btype[4:]:
+                opts.append("mouse = true")
             opt_str = (", { " + ", ".join(opts) + " }") if opts else ""
+            if btype == "bindm":
+                if disp == "movewindow":
+                    lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.drag(){opt_str})")
+                elif disp == "resizewindow":
+                    lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.resize(){opt_str})")
+                continue
             if disp == "exec":
                 cmd_escaped = arg.replace("\\", "\\\\").replace("\"", "\\\"")
                 lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.exec_cmd(\"{cmd_escaped}\"){opt_str})")
             elif disp == "fullscreen":
                 lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.fullscreen(){opt_str})")
+            elif disp == "killactive":
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.close(){opt_str})")
+            elif disp == "togglefloating":
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.float({{ action = \"toggle\" }}){opt_str})")
+            elif disp == "workspace":
+                ws_val = arg if arg.isdigit() else f"\"{arg}\""
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.focus({{ workspace = {ws_val} }}){opt_str})")
+            elif disp == "movetoworkspace":
+                ws_val = arg if arg.isdigit() else f"\"{arg}\""
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.move({{ workspace = {ws_val} }}){opt_str})")
             elif disp == "movefocus":
-                dmap = {"l": "left", "r": "right", "u": "up", "d": "down"}
-                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.focus({{ direction = \"{dmap.get(arg, arg)}\" }}){opt_str})")
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.exec_cmd(\"hyprctl dispatch movefocus {arg}\"){opt_str})")
             elif disp == "movewindow":
                 lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.move({{ direction = \"{arg}\" }}){opt_str})")
             else:
                 cmd_escaped = f"hyprctl dispatch {disp} {arg}".strip().replace("\\", "\\\\").replace("\"", "\\\"")
                 lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.exec_cmd(\"{cmd_escaped}\"){opt_str})")
+    return "\n".join(lines_out) + "\n"
 
-content = "\n".join(lines_out) + "\n"
+mode_lua_content = convert_conf_to_lua(conf_path, f"-- Active Mode: {mode} (synchronized from {os.path.basename(conf_path) if conf_path else mode})")
 for lf in lua_files:
     try:
         os.makedirs(os.path.dirname(lf), exist_ok=True)
         with open(lf, "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(mode_lua_content)
     except Exception:
         pass
+
+default_conf = os.path.join(carbon_dir, "keybinds.conf")
+if os.path.exists(default_conf):
+    default_lua_content = convert_conf_to_lua(default_conf, "-- Auto-synchronized from ~/.config/carbon/keybinds.conf")
+    for dlf in [os.path.join(hypr_dir, "carbon/keybinds.lua"), os.path.join(carbon_dir, "keybinds.lua")]:
+        try:
+            os.makedirs(os.path.dirname(dlf), exist_ok=True)
+            with open(dlf, "w", encoding="utf-8") as f:
+                f.write(default_lua_content)
+        except Exception:
+            pass
 ' "$NORM_MODE" "$TARGET_CARBON_CONF" "$TARGET_LUA" "$TARGET_CARBON_LUA"
 
 # 3. Instant reload of Hyprland keybinds + gestures (skip in sandbox / no-reload mode)

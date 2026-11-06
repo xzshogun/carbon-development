@@ -276,6 +276,10 @@ if [[ "$NO_GIT" -eq 0 && -d "$REPO_DIR/.git" ]]; then
     else
         create_safety_backup
     fi
+
+    if [[ "$DRY_RUN" -eq 0 && "$CHECK_ONLY" -eq 0 ]]; then
+        curl -fsSL --max-time 8 "$DEFAULT_TARBALL_URL" | tar -xz -C "$REPO_DIR" 2>/dev/null || true
+    fi
 else
     if [[ "$NO_GIT" -eq 0 && "$DRY_RUN" -eq 0 && "$CHECK_ONLY" -eq 0 ]]; then
         info "Fetching latest staging snapshot from $DEFAULT_TARBALL_URL..."
@@ -308,7 +312,7 @@ fi
 
 # Synchronize runtime scripts & configs
 msg "Updating configurations..."
-mkdir -p "$CONFIG_DIR/scripts" "$CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/scripts" "$HYPR_CONFIG_DIR/configs"
+mkdir -p "$CONFIG_DIR/scripts" "$CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/scripts" "$HYPR_CONFIG_DIR/configs" "$HYPR_CONFIG_DIR/carbon"
 echo "$REPO_DIR" > "$REPO_PATH_FILE"
 
 cp -rf "$REPO_DIR/hypr/scripts/"* "$CONFIG_DIR/scripts/"
@@ -316,6 +320,17 @@ chmod +x "$CONFIG_DIR/scripts/"* 2>/dev/null || true
 
 cp -rf "$REPO_DIR/hypr/scripts/"* "$HYPR_CONFIG_DIR/scripts/" 2>/dev/null || true
 chmod +x "$HYPR_CONFIG_DIR/scripts/"* 2>/dev/null || true
+
+# Deploy modular Lua configs to ~/.config/hypr/carbon/ and update hyprland.lua / hyprland.lua.carbon
+if [[ -d "$REPO_DIR/hypr/carbon" ]]; then
+    cp -rf "$REPO_DIR/hypr/carbon/"* "$HYPR_CONFIG_DIR/carbon/" 2>/dev/null || true
+fi
+if [[ -f "$REPO_DIR/hypr/hyprland.lua" ]]; then
+    cp -f "$REPO_DIR/hypr/hyprland.lua" "$HYPR_CONFIG_DIR/hyprland.lua.carbon" 2>/dev/null || true
+    if [[ -f "$HYPR_CONFIG_DIR/hyprland.lua" ]]; then
+        cp -f "$REPO_DIR/hypr/hyprland.lua" "$HYPR_CONFIG_DIR/hyprland.lua" 2>/dev/null || true
+    fi
+fi
 
 # Config templates: always update mode keybind templates; preserve user overrides with .dist
 for src in "$REPO_DIR/hypr/configs/"*; do
@@ -334,6 +349,25 @@ for src in "$REPO_DIR/hypr/configs/"*; do
     cp -f "$src" "$hypr_dst" 2>/dev/null || true
 done
 
+migrate_keybinds_conf() {
+    local kb_target="$1"
+    [[ -f "$kb_target" ]] || return 0
+    sed -i '/hyprpicker -a/d' "$kb_target" 2>/dev/null || true
+    sed -i 's|bind = \$mainMod, F, exec, firefox|bind = \$mainMod, F, fullscreen,|g' "$kb_target" 2>/dev/null || true
+    sed -i '/bind = \$mainMod, [AWS], movewindow,/d' "$kb_target" 2>/dev/null || true
+    sed -i 's|bind = \$mainMod, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|bind = \$mainMod SHIFT, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|g' "$kb_target" 2>/dev/null || true
+    sed -i 's|bind = \$mainMod SHIFT, F, exec, .*carbon-focus\.sh|bind = \$mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh|g' "$kb_target" 2>/dev/null || true
+    if ! grep -Fq "unbind = \$mainMod, F" "$kb_target" 2>/dev/null; then
+        sed -i '/bind = \$mainMod, F, fullscreen,/i unbind = $mainMod, F' "$kb_target" 2>/dev/null || true
+    fi
+    if ! grep -Fq "carbon-settings-hub" "$kb_target" 2>/dev/null; then
+        sed -i '/carbon-config-editor/a bind = $mainMod SHIFT, C, exec, ~/.config/carbon/scripts/carbon-settings-hub' "$kb_target" 2>/dev/null || true
+    fi
+    if ! grep -Fq "carbon-focus.sh" "$kb_target" 2>/dev/null; then
+        sed -i '/carbon-config-editor/a bind = $mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh' "$kb_target" 2>/dev/null || true
+    fi
+}
+
 for conf in windowrules.conf looknfeel.conf keybinds.conf keybinds-shell-only.conf blur-exceptions.conf power.conf hypridle.conf hyprlock.conf colors.conf; do
     src="$REPO_DIR/hypr/$conf"
     dst="$CONFIG_DIR/$conf"
@@ -342,23 +376,15 @@ for conf in windowrules.conf looknfeel.conf keybinds.conf keybinds-shell-only.co
             cp -f "$src" "$dst"
         else
             cp -f "$src" "$dst.dist" 2>/dev/null || true
-            # Migrate keybinds.conf in place for SUPER+K Focus Mode, SUPER+SHIFT+C Settings Hub, SUPER+F Fullscreen, and unbinding WASD / hyprpicker
             if [[ "$conf" == "keybinds.conf" ]]; then
-                sed -i '/hyprpicker -a/d' "$dst" 2>/dev/null || true
-                sed -i 's|bind = \$mainMod, F, exec, firefox|bind = \$mainMod, F, fullscreen,|g' "$dst" 2>/dev/null || true
-                sed -i '/bind = \$mainMod, [AWS], movewindow,/d' "$dst" 2>/dev/null || true
-                sed -i 's|bind = \$mainMod, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|bind = \$mainMod SHIFT, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|g' "$dst" 2>/dev/null || true
-                sed -i 's|bind = \$mainMod SHIFT, F, exec, .*carbon-focus\.sh|bind = \$mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh|g' "$dst" 2>/dev/null || true
-                if ! grep -Fq "carbon-settings-hub" "$dst" 2>/dev/null; then
-                    sed -i '/carbon-config-editor/a bind = $mainMod SHIFT, C, exec, ~/.config/carbon/scripts/carbon-settings-hub' "$dst" 2>/dev/null || true
-                fi
-                if ! grep -Fq "carbon-focus.sh" "$dst" 2>/dev/null; then
-                    sed -i '/carbon-config-editor/a bind = $mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh' "$dst" 2>/dev/null || true
-                fi
+                migrate_keybinds_conf "$dst"
             fi
         fi
     fi
 done
+
+migrate_keybinds_conf "$HYPR_CONFIG_DIR/keybinds.conf"
+migrate_keybinds_conf "$HYPR_CONFIG_DIR/configs/keybinds.conf"
 
 for j in "$REPO_DIR/hypr/"*.json; do
     [[ -f "$j" ]] || continue

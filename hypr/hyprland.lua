@@ -1,20 +1,30 @@
 -- ==============================================================================
 -- CARBON SHELL — HYPRLAND MASTER CONFIGURATION (LUA)
--- Location: ~/.config/hypr/carbon/hyprland.lua
+-- Location: ~/.config/hypr/hyprland.lua & ~/.config/hypr/hyprland.lua.carbon
 -- Activated by shell-switcher (option 2 / carbon)
 -- ==============================================================================
 
+package.path = package.path .. ";" .. (os.getenv("HOME") or "") .. "/.config/hypr/?.lua"
+
+-- Intel Haswell (Gen 7.5) DMABUF feedback quirk — essential for native Wayland alpha/EGL
+hl.config({
+    quirks = {
+        skip_non_kms_dmabuf_formats = false,
+    },
+})
+
 -- Colors
 local c = {
-    outline            = "rgba(899296ff)",
-    outline_variant    = "rgba(40484bff)",
+    outline                = "rgba(899296ff)",
+    outline_variant        = "rgba(40484bff)",
     on_secondary_container = "rgba(cee6f0ff)",
-    secondary          = "rgba(b3cad3ff)",
-    source_color       = "rgba(0e3c48ff)",
+    secondary              = "rgba(b3cad3ff)",
+    source_color           = "rgba(0e3c48ff)",
 }
 
--- Monitor
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1, sdrsaturation = 1.3 })
+-- Monitor (85Hz Overclock on BOE 1557 internal panel + fallback)
+hl.monitor({ output = "eDP-1", mode = "1366x768@85", position = "0x0", scale = 1 })
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
 -- Programs
 local terminal    = "kitty"
@@ -32,12 +42,16 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("bash -c 'wl-paste --watch cliphist store'")
     hl.exec_cmd("bash -c 'wl-paste --type image --watch cliphist store --max-items 500'")
     hl.exec_cmd("systemctl --user start carbon-quickshell.service")
+    hl.exec_cmd("systemctl --user start carbon-hub.service")
+    hl.exec_cmd("~/.config/carbon/scripts/carbon-gestures-init.sh")
 end)
 
 -- Environment
-hl.env("XCURSOR_SIZE", "24")
-hl.env("XCURSOR_THEME", "capitaine-cursors")
-hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("XCURSOR_SIZE", "18")
+hl.env("XCURSOR_THEME", "Breeze_Light")
+hl.env("HYPRCURSOR_SIZE", "18")
+hl.env("HYPRCURSOR_THEME", "Breeze_Light")
+hl.env("CARBON_CONFIG_DIR", (os.getenv("HOME") or "") .. "/.config/carbon")
 hl.env("LIBVA_DRIVER_NAME", "i965")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
@@ -70,7 +84,7 @@ hl.animation({ leaf = "fade",          enabled = true, speed = 4,  bezier = "ove
 hl.animation({ leaf = "workspaces",    enabled = true, speed = 4,  bezier = "wind" })
 hl.animation({ leaf = "windows",       enabled = true, speed = 4,  bezier = "bounce",   style = "popin" })
 
--- Input & Touchpad
+-- Input & Touchpad (3-finger scroll / workspace swipe + gestures)
 hl.config({
     input = {
         kb_layout      = "us",
@@ -79,8 +93,22 @@ hl.config({
         accel_profile  = "adaptive",
         force_no_accel = false,
         touchpad = {
-            natural_scroll = true,
+            natural_scroll       = true,
+            disable_while_typing = true,
+            ["tap-to-click"]     = true,
+            scroll_factor        = 1.0,
         },
+    },
+    gestures = {
+        workspace_swipe                          = true,
+        workspace_swipe_fingers                  = 3,
+        workspace_swipe_distance                 = 300,
+        workspace_swipe_cancel_ratio             = 0.15,
+        workspace_swipe_min_speed_to_force       = 5,
+        workspace_swipe_direction_lock           = true,
+        workspace_swipe_direction_lock_threshold = 10,
+        workspace_swipe_create_new               = true,
+        workspace_swipe_invert                   = true,
     },
 })
 
@@ -89,12 +117,33 @@ hl.gesture({
     direction = "horizontal",
     action    = "workspace",
 })
+hl.gesture({
+    fingers   = 3,
+    direction = "up",
+    action    = function()
+        hl.exec_cmd("sh ~/.config/carbon/scripts/carbon-ipc.sh toggle-overview")
+    end,
+})
+hl.gesture({
+    fingers   = 3,
+    direction = "down",
+    action    = function()
+        hl.exec_cmd("sh ~/.config/carbon/scripts/carbon-ipc.sh spatial-canvas")
+    end,
+})
+hl.gesture({
+    fingers   = 4,
+    direction = "down",
+    action    = function()
+        hl.exec_cmd("~/.config/carbon/scripts/hyprlock.sh")
+    end,
+})
 
--- Load Modular Carbon Shell Configurations
-local home = os.getenv("HOME") or ""
-dofile(home .. "/.config/hypr/carbon/looknfeel.lua")
-dofile(home .. "/.config/hypr/carbon/windowrules.lua")
-dofile(home .. "/.config/hypr/carbon/keybinds.lua")
-pcall(dofile, home .. "/.config/hypr/current-mode-keybinds.lua")
-
+-- Load GUI options then override with Modular Carbon Shell Configurations
 pcall(require, "hyprland-gui")
+
+local home = os.getenv("HOME") or ""
+pcall(dofile, home .. "/.config/hypr/carbon/looknfeel.lua")
+pcall(dofile, home .. "/.config/hypr/carbon/windowrules.lua")
+pcall(dofile, home .. "/.config/hypr/carbon/keybinds.lua")
+pcall(dofile, home .. "/.config/hypr/current-mode-keybinds.lua")

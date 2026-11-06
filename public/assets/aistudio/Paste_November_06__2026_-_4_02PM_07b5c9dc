@@ -1,0 +1,391 @@
+=== 1. LATEST QUICKSHELL LOG ===
+total 76
+drwxr-xr-x   2 reduct reduct   120 Nov  6 16:01 .
+drwxr-xr-x 114 reduct reduct  2280 Nov  6 16:01 ..
+-rw-r--r--   1 reduct reduct   287 Nov  6 16:01 instance.lock
+srwxr-xr-x   1 reduct reduct     0 Nov  6 16:01 ipc.sock
+-rw-r--r--   1 reduct reduct   324 Nov  6 16:01 log.log
+-rw-r--r--   1 reduct reduct 66191 Nov  6 16:01 log.qslog
+Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/WorkspaceOverviewLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/workspace/WorkspaceOverviewLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/WorkspaceOverviewLayer.qml")
+xGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/HyprlandDispatch.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/common/HyprlandDispatch.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/HyprlandDispatch.qml")
+Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/WorkspaceOverviewWindow.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/workspace/WorkspaceOverviewWindow.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/WorkspaceOverviewWindow.qml")
+wGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/HyprlandData.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/workspace/HyprlandData.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/workspace/HyprlandData.qml")
+}Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandMprisController.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/IslandMprisController.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandMprisController.qml")
+{Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/ExpandedPlayerLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/ExpandedPlayerLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/ExpandedPlayerLayer.qml")
+{Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/controlcenter/MatteSurface.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/controlcenter/MatteSurface.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/controlcenter/MatteSurface.qml")
+vGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/WorkspaceLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/WorkspaceLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/WorkspaceLayer.qml")
+pGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/OsdLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/OsdLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/OsdLayer.qml")
+Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/controlcenter/ControlCenterLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/controlcenter/ControlCenterLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/controlcenter/ControlCenterLayer.qml")
+zGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/BluetoothFormatting.js" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/common/BluetoothFormatting.js") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/BluetoothFormatting.js")
+Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/ApplicationLauncherLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/ApplicationLauncherLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/ApplicationLauncherLayer.qml")
+xGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/ApplicationSearch.js" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/common/ApplicationSearch.js") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/common/ApplicationSearch.js")
+tGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/FavoriteStar.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/FavoriteStar.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/FavoriteStar.qml")
+Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/BluetoothConnectionTracker.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/BluetoothConnectionTracker.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/BluetoothConnectionTracker.qml")
+|Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/SwipeCustomInfoLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/SwipeCustomInfoLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/SwipeCustomInfoLayer.qml")
+vGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/SplitIconLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/SplitIconLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/SplitIconLayer.qml")
+}Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandRootGestureArea.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/IslandRootGestureArea.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandRootGestureArea.qml")
+sGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandClock.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/IslandClock.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/IslandClock.qml")
+|Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/WallpaperPickerLayer.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/tide/qml/island/WallpaperPickerLayer.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/tide/qml/island/WallpaperPickerLayer.qml")
+jGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/FocusHUDBackground.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/FocusHUDBackground.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/FocusHUDBackground.qml")
+kGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/WallpaperTransition.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/WallpaperTransition.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/WallpaperTransition.qml")
+cGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/SettingsHub.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/SettingsHub.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/SettingsHub.qml")
+`Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/ModesTab.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/ModesTab.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/ModesTab.qml")
+jGot intercept for "/home/reduct/.local/share/quickshell/carbon/components/RazorWireSlider.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/components/RazorWireSlider.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/components/RazorWireSlider.qml")
+total 80
+drwxr-xr-x   2 reduct reduct   120 Nov  6 16:01 .
+drwxr-xr-x 114 reduct reduct  2280 Nov  6 16:01 ..
+-rw-r--r--   1 reduct reduct   287 Nov  6 16:01 instance.lock
+srwxr-xr-x   1 reduct reduct     0 Nov  6 16:01 ipc.sock
+-rw-r--r--   1 reduct reduct   577 Nov  6 16:01 log.log
+-rw-r--r--   1 reduct reduct 72646 Nov  6 16:01 log.qslog
+Passing through intercept QUrl("qs:@/qs/modules/ConnectivityOrbitPicker.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/ConnectivityOrbitPicker.qml")
+rGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/visualizers/VisualizerHost.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/visualizers/VisualizerHost.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/visualizers/VisualizerHost.qml")
+cGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/ControlRing.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/ControlRing.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/ControlRing.qml")
+fGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/CarbonCalendar.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/CarbonCalendar.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/CarbonCalendar.qml")
+gGot intercept for "/home/reduct/.local/share/quickshell/carbon/components/MonolineIcon.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/components/MonolineIcon.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/components/MonolineIcon.qml")
+gGot intercept for "/home/reduct/.local/share/quickshell/carbon/components/MonolinePaths.js" contains ""
+Passing through intercept QUrl("qs:@/qs/components/MonolinePaths.js") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/components/MonolinePaths.js")
+kGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/BatteryOrbitSection.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/BatteryOrbitSection.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/BatteryOrbitSection.qml")
+iGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/NotificationPanel.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/NotificationPanel.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/NotificationPanel.qml")
+hGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/NotificationCard.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/NotificationCard.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/NotificationCard.qml")
+aGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/TrayPopup.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/TrayPopup.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/TrayPopup.qml")
+eGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/CalendarPopup.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/CalendarPopup.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/CalendarPopup.qml")
+mGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/LockTransitionOverlay.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/LockTransitionOverlay.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/LockTransitionOverlay.qml")
+nGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/lock/UnifiedCarbonAtom.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/lock/UnifiedCarbonAtom.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/lock/UnifiedCarbonAtom.qml")
+_Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/BtPopup.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/BtPopup.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/BtPopup.qml")
+pGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/NucleusTransitionOverlay.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/NucleusTransitionOverlay.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/NucleusTransitionOverlay.qml")
+eGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/NotchBarRight.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/NotchBarRight.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/NotchBarRight.qml")
+`Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/FocusHUD.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/FocusHUD.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/FocusHUD.qml")
+iGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/NotificationPopup.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/NotificationPopup.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/NotificationPopup.qml")
+kGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/WallpaperTransition.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/WallpaperTransition.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/WallpaperTransition.qml")
+dGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/WallpaperMod.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/WallpaperMod.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/WallpaperMod.qml")
+lGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/CarbonLewisWallpaper.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/CarbonLewisWallpaper.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/CarbonLewisWallpaper.qml")
+gGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/WallpaperPicker.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/WallpaperPicker.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/WallpaperPicker.qml")
+eGot intercept for "/home/reduct/.local/share/quickshell/carbon/modules/MinimalIsland.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/MinimalIsland.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/MinimalIsland.qml")
+`Got intercept for "/home/reduct/.local/share/quickshell/carbon/modules/BarRight.qml" contains ""
+Passing through intercept QUrl("qs:@/qs/modules/BarRight.qml") to QUrl("file:///home/reduct/.local/share/quickshell/carbon/modules/BarRight.qml")
+Failed to load configuration
+=  caused by @shell.qml[4188:13]: Type SettingsHub unavailable
+D  caused by @modules/SettingsHub.qml[258:25]: FileView is not a type
+=== 2. HYPRLAND CONFIG FILES ===
+/home/reduct/.config/carbon/:
+total 220
+drwxr-xr-x  7 reduct reduct 4096 Nov  6 15:51 .
+drwx------ 94 reduct reduct 4096 Nov  6 10:01 ..
+drwxr-xr-x  3 reduct reduct 4096 Nov  5 14:57 assets
+drwxr-xr-x  2 reduct reduct 4096 Nov  6 15:48 backups
+-rw-r--r--  1 reduct reduct  261 Nov  6 15:51 blur-exceptions.conf
+-rw-r--r--  1 reduct reduct  261 Nov  6 15:49 blur-exceptions.conf.dist
+-rw-r--r--  1 reduct reduct  281 Nov  6 15:51 carbon-bar-mode.json
+-rw-r--r--  1 reduct reduct  284 Nov  6 15:51 carbon-bar-position.json
+-rw-r--r--  1 reduct reduct  172 Nov  6 15:51 carbon-blank-tile.json
+-rw-r--r--  1 reduct reduct    2 Nov  6 15:51 carbon-blur-exceptions.json
+-rw-r--r--  1 reduct reduct   27 Nov  6 15:51 carbon-clock-style.json
+-rw-r--r--  1 reduct reduct  941 Nov  6 15:49 carbon.conf
+-rw-r--r--  1 reduct reduct  102 Nov  6 15:51 carbon-control-center.json
+-rw-r--r--  1 reduct reduct  552 Nov  5 14:57 carbon-custom-gestures.json
+-rw-r--r--  1 reduct reduct   97 Nov  6 15:51 carbon-launcher.json
+-rw-r--r--  1 reduct reduct  259 Nov  6 15:51 carbon-lockscreen.json
+-rw-r--r--  1 reduct reduct  117 Nov  6 15:51 carbon-motion.json
+-rw-r--r--  1 reduct reduct   78 Nov  6 15:51 carbon-notifications.json
+-rw-r--r--  1 reduct reduct  313 Nov  5 15:03 carbon-pomodoro.json
+-rw-r--r--  1 reduct reduct  346 Nov  6 15:51 carbon-power.json
+-rw-r--r--  1 reduct reduct   92 Nov  5 14:57 carbon-qs-layout.json
+-rw-r--r--  1 reduct reduct  348 Nov  6 15:48 carbon-repo.json
+-rw-r--r--  1 reduct reduct   75 Nov  5 14:57 carbon-todos.json
+-rw-r--r--  1 reduct reduct 2129 Nov  6 15:51 carbon-vanish-shortcuts.json
+-rw-r--r--  1 reduct reduct  121 Nov  6 15:51 carbon-wallpaper-source.json
+-rw-r--r--  1 reduct reduct  241 Nov  5 14:57 cava-island.conf
+-rw-r--r--  1 reduct reduct  163 Nov  5 14:57 cava-lock.conf
+-rw-r--r--  1 reduct reduct 1799 Nov  5 14:57 colors.conf
+-rw-r--r--  1 reduct reduct 1799 Nov  6 15:49 colors.conf.dist
+drwxr-xr-x  2 reduct reduct 4096 Nov  6 15:49 configs
+-rw-r--r--  1 reduct reduct  918 Nov  6 15:51 current-mode-keybinds.lua
+lrwxrwxrwx  1 reduct reduct   63 Nov  6 15:51 current_wallpaper -> /home/reduct/Pictures/Wallpapers/wallhaven-dgzj9o_1920x1080.png
+-rw-r--r--  1 reduct reduct   64 Nov  6 15:51 current_wallpaper_path
+-rw-r--r--  1 reduct reduct  808 Nov  6 15:51 hypridle.conf
+-rw-r--r--  1 reduct reduct  808 Nov  6 15:49 hypridle.conf.dist
+-rw-r--r--  1 reduct reduct 3243 Nov  5 14:57 hyprlock.conf
+-rw-r--r--  1 reduct reduct 3243 Nov  6 15:49 hyprlock.conf.dist
+-rw-r--r--  1 reduct reduct 6890 Nov  6 15:49 keybinds.conf
+-rw-r--r--  1 reduct reduct 6567 Nov  6 15:49 keybinds.conf.dist
+-rw-r--r--  1 reduct reduct  639 Nov  6 15:49 keybinds-shell-only.conf
+-rw-r--r--  1 reduct reduct  607 Nov  5 15:24 keybinds-shell-only.conf.dist
+-rw-r--r--  1 reduct reduct 1380 Nov  6 15:51 looknfeel.conf
+-rw-r--r--  1 reduct reduct 1380 Nov  6 15:49 looknfeel.conf.dist
+drwxr-xr-x  2 reduct reduct 4096 Nov  5 14:57 lyrics
+-rw-r--r--  1 reduct reduct  749 Nov  6 15:51 power.conf
+-rw-r--r--  1 reduct reduct  749 Nov  6 15:49 power.conf.dist
+-rw-r--r--  1 reduct reduct   12 Nov  6 15:51 power-profile
+-rw-r--r--  1 reduct reduct   32 Nov  6 15:49 repo_path
+drwxr-xr-x  3 reduct reduct 4096 Nov  6 15:49 scripts
+-rw-r--r--  1 reduct reduct  390 Nov  5 14:58 theme.json
+-rw-r--r--  1 reduct reduct  882 Nov  6 15:51 vanish-keybinds.conf
+-rw-r--r--  1 reduct reduct 2957 Nov  5 14:57 windowrules.conf
+-rw-r--r--  1 reduct reduct 2957 Nov  6 15:49 windowrules.conf.dist
+
+/home/reduct/.config/hypr/:
+total 252
+drwxr-xr-x 10 reduct reduct  4096 Nov  6 15:51 .
+drwx------ 94 reduct reduct  4096 Nov  6 10:01 ..
+-rw-r--r--  1 reduct reduct   383 Oct 31 14:41 blur-exceptions.conf
+-rw-r--r--  1 reduct reduct   383 Oct 31 16:06 blur-exceptions.conf.dist
+-rw-r--r--  1 reduct reduct   281 Nov  6 15:51 carbon-bar-mode.json
+-rw-r--r--  1 reduct reduct   284 Nov  6 15:51 carbon-bar-position.json
+-rw-r--r--  1 reduct reduct   172 Nov  6 15:51 carbon-blank-tile.json
+-rw-r--r--  1 reduct reduct     2 Nov  6 15:51 carbon-blur-exceptions.json
+-rw-r--r--  1 reduct reduct    27 Nov  6 15:51 carbon-clock-style.json
+-rw-r--r--  1 reduct reduct   102 Nov  6 15:51 carbon-control-center.json
+-rw-r--r--  1 reduct reduct    97 Nov  6 15:51 carbon-launcher.json
+-rw-r--r--  1 reduct reduct   259 Nov  6 15:51 carbon-lockscreen.json
+-rw-r--r--  1 reduct reduct   117 Nov  6 15:51 carbon-motion.json
+-rw-r--r--  1 reduct reduct    78 Nov  6 15:51 carbon-notifications.json
+-rw-r--r--  1 reduct reduct   313 Nov  5 15:03 carbon-pomodoro.json
+-rw-r--r--  1 reduct reduct   346 Nov  6 15:51 carbon-power.json
+-rw-r--r--  1 reduct reduct   121 Nov  6 15:51 carbon-wallpaper-source.json
+-rw-r--r--  1 reduct reduct   241 Oct 19 19:48 cava-island.conf
+-rw-r--r--  1 reduct reduct   163 Oct  7 13:42 cava-lock.conf
+-rwxr-xr-x  1 reduct reduct  1755 Sep 12 19:39 colors.conf
+drwxr-xr-x  2 reduct reduct  4096 Nov  6 15:49 configs
+-rw-r--r--  1 reduct reduct   918 Nov  6 15:51 current-mode-keybinds.lua
+lrwxrwxrwx  1 reduct reduct    63 Nov  6 15:51 current_wallpaper -> /home/reduct/Pictures/Wallpapers/wallhaven-dgzj9o_1920x1080.png
+-rw-r--r--  1 reduct reduct    64 Nov  6 15:51 current_wallpaper_path
+-rwxr-xr-x  1 reduct reduct   808 Nov  6 15:51 hypridle.conf
+-rwxr-xr-x  1 reduct reduct  1792 Nov  5 14:57 hyprland.conf
+-rwxr-xr-x  1 reduct reduct  1731 Oct 24 11:44 hyprland.conf.backup_20261024_114408
+-rwxr-xr-x  1 reduct reduct  1730 Nov  4 17:01 hyprland.conf.backup_20261104_171136
+-rwxr-xr-x  1 reduct reduct  1726 Nov  5 14:33 hyprland.conf.backup_20261105_145727
+-rw-------  1 reduct reduct  2014 Nov  6 15:51 hyprland-gui.lua
+-rw-r--r--  1 reduct reduct 10933 Nov  6 15:51 hyprland.lua
+-rw-r--r--  1 reduct reduct 10933 Nov  4 17:29 hyprland.lua.carbon
+-rw-r--r--  1 reduct reduct 13280 Nov  4 17:18 hyprland.lua.tide
+drwxr-xr-x  2 reduct reduct  4096 Oct  7 10:34 hyprlock
+-rwxr-xr-x  1 reduct reduct  4523 Oct 31 12:52 hyprlock.conf
+-rw-r--r--  1 reduct reduct  6764 Oct 31 14:41 keybinds.conf
+-rw-r--r--  1 reduct reduct  6764 Oct 31 16:06 keybinds.conf.dist
+-rw-r--r--  1 reduct reduct   462 Oct 31 14:41 keybinds-shell-only.conf
+-rw-r--r--  1 reduct reduct   462 Oct 31 16:06 keybinds-shell-only.conf.dist
+drwxr-xr-x  2 reduct reduct  4096 Sep 12 20:34 lock-ornament
+-rw-r--r--  1 reduct reduct  1380 Oct 31 14:41 looknfeel.conf
+-rw-r--r--  1 reduct reduct  1380 Oct 31 16:06 looknfeel.conf.dist
+drwxr-xr-x  2 reduct reduct  4096 Sep 12 19:39 patches
+-rw-r--r--  1 reduct reduct   749 Nov  6 15:51 power.conf
+drwxr-xr-x  2 reduct reduct  4096 Oct  7 10:34 scheme
+drwxr-xr-x  3 reduct reduct  4096 Nov  6 15:49 scripts
+drwxr-xr-x  2 reduct reduct  4096 Oct 15 08:29 shaders
+-rw-r--r--  1 reduct reduct   390 Nov  5 14:58 theme.json
+drwxr-xr-x  2 reduct reduct  4096 Nov  4 17:35 tide
+-rw-r--r--  1 reduct reduct  2658 Nov  6 15:51 tide-island-userconfig.json
+-rw-r--r--  1 reduct reduct  2957 Oct 26 11:28 windowrules.conf
+-rw-r--r--  1 reduct reduct  2957 Oct 31 16:06 windowrules.conf.dist
+-rw-r--r--  1 reduct reduct    87 Oct  7 10:34 xdph.conf
+=== 3. HYPRLAND.CONF / HYPRLAND.LUA ===
+source = colors.conf
+
+quirks {
+    skip_non_kms_dmabuf_formats = false
+}
+
+### MONITORS ###
+monitor = eDP-1, 1366x768@85.00, auto, 1
+monitor = , preferred, auto, 1
+
+### MY PROGRAMS ###
+$terminal = kitty
+$fileManager = nautilus
+$menu = rofi -show run
+
+### AUTOSTART ###
+exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
+exec-once = systemctl --user restart xdg-desktop-portal-hyprland
+exec-once = systemctl --user restart xdg-desktop-portal
+exec-once = pactl set-card-profile alsa_card.pci-0000_00_1b.0 output:analog-stereo+input:analog-stereo
+exec-once = nm-applet
+exec-once = blueman-applet
+exec-once = systemctl --user start hyprpolkitagent
+exec-once = hypridle
+
+### ENVIRONMENT VARIABLES ###
+env = XCURSOR_SIZE,18
+env = XCURSOR_THEME,Breeze_Light
+env = HYPRCURSOR_SIZE,18
+env = LIBVA_DRIVER_NAME,i965
+env = XDG_CURRENT_DESKTOP,Hyprland
+env = XDG_SESSION_DESKTOP,Hyprland
+env = XDG_DESKTOP_PORTAL,hyprland
+env = XDG_DATA_DIRS,/var/lib/flatpak/exports/share:/var/lib/flatpak/exports/share/applications:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
+env = XDG_PICTURES_DIR,$HOME/Pictures
+
+### TAGS ###
+source= ~/.config/hypr/configs/tags.conf
+
+### LOOK AND FEEL ###
+source= ~/.config/hypr/configs/looknfeel.conf
+
+### ANIMATIONS ###
+source= ~/.config/hypr/configs/UserAnimations.conf
+
+### WINDOWRULES AND LAYERRULES ###
+source = ~/.config/hypr/configs/windowrules.conf
+
+dwindle {
+    pseudotile = true
+    preserve_split = true
+}
+
+master {
+    new_status = master
+}
+
+misc {
+    force_default_wallpaper = 0
+    disable_hyprland_logo = true
+    vfr = true
+}
+
+### INPUT ###
+source= ~/.config/hypr/configs/input.conf
+
+### KEYBINDS ###
+source= ~/.config/hypr/configs/keybinds.conf
+
+
+# Carbon Shell Integration
+source = ~/.config/carbon/carbon.conf
+-- ==============================================================================
+-- HYPRLAND MASTER CONFIGURATION FOR CARBON SHELL (LUA)
+-- Location: ~/.config/hypr/hyprland.lua.carbon
+-- Activated by shell-switcher
+-- ==============================================================================
+
+package.path = package.path .. ";" .. (os.getenv("HOME") or "") .. "/.config/hypr/?.lua"
+
+-- Intel Haswell (Gen 7.5) DMABUF feedback quirk — essential for native Wayland alpha/EGL
+hl.config({
+    quirks = {
+        skip_non_kms_dmabuf_formats = false,
+    },
+})
+
+-- Colors
+local c = {
+    outline                = "rgba(899296ff)",
+    outline_variant        = "rgba(40484bff)",
+    on_secondary_container = "rgba(cee6f0ff)",
+    secondary              = "rgba(b3cad3ff)",
+    source_color           = "rgba(0e3c48ff)",
+}
+
+-- Monitor (85Hz Overclock on BOE 1557 internal panel)
+hl.monitor({ output = "eDP-1", mode = "1366x768@85", position = "0x0", scale = 1 })
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+
+-- Programs
+local terminal    = "kitty"
+local fileManager = "nautilus"
+
+-- Autostart
+hl.on("hyprland.start", function()
+    hl.exec_cmd("awww-daemon --format argb")
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
+    hl.exec_cmd("systemctl --user restart xdg-desktop-portal-hyprland")
+    hl.exec_cmd("systemctl --user restart xdg-desktop-portal")
+    hl.exec_cmd("pactl set-card-profile alsa_card.pci-0000_00_1b.0 output:analog-stereo+input:analog-stereo")
+    hl.exec_cmd("systemctl --user start hyprpolkitagent")
+    hl.exec_cmd("hypridle")
+    hl.exec_cmd("bash -c 'wl-paste --watch cliphist store'")
+    hl.exec_cmd("bash -c 'wl-paste --type image --watch cliphist store --max-items 500'")
+    hl.exec_cmd("systemctl --user start carbon-quickshell.service")
+end)
+
+-- Environment
+hl.env("XCURSOR_SIZE", "18")
+hl.env("XCURSOR_THEME", "Breeze_Light")
+hl.env("HYPRCURSOR_SIZE", "18")
+hl.env("HYPRCURSOR_THEME", "Breeze_Light")
+hl.env("CARBON_CONFIG_DIR", (os.getenv("HOME") or "") .. "/.config/carbon")
+hl.env("LIBVA_DRIVER_NAME", "i965")
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
+hl.env("XDG_SESSION_DESKTOP", "Hyprland")
+hl.env("XDG_DESKTOP_PORTAL", "hyprland")
+
+-- Animations & Curves
+hl.config({
+    animations = {
+=== 4. CARBON.CONF ===
+env = CARBON_CONFIG_DIR,$HOME/.config/carbon
+env = PATH,$HOME/.local/bin:$PATH
+
+source = ~/.config/carbon/colors.conf
+source = ~/.config/carbon/windowrules.conf
+source = ~/.config/carbon/blur-exceptions.conf
+source = ~/.config/carbon/power.conf
+source = ~/.config/carbon/keybinds.conf
+source = ~/.config/carbon/configs/current-mode-keybinds.conf
+
+cursor {
+    no_warps = true
+}
+
+general {
+    snap {
+        enabled = true
+    }
+}
+
+exec-once = systemctl --user start carbon-quickshell.service
+exec-once = systemctl --user start carbon-hub.service
+exec-once = bash -c 'wl-paste --watch cliphist store'
+exec-once = bash -c 'wl-paste --type image --watch cliphist store'
+exec-once = hypridle -c ~/.config/carbon/hypridle.conf
+exec-once = ~/.config/carbon/scripts/portal.sh
+exec-once = ~/.config/carbon/scripts/carbon-audio-init.sh
+exec-once = ~/.config/carbon/scripts/carbon-snap-top.sh
+
+exec = ~/.config/carbon/scripts/carbon-gestures-init.sh

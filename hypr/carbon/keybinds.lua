@@ -39,6 +39,7 @@ hl.bind(mainMod .. " + " .. "SHIFT" .. " + Q", hl.dsp.exec_cmd("~/.config/hypr/s
 -- dynamically from ~/.config/hypr/current-mode-keybinds.lua
 -- ==============================================================================
 -- Carbon Config Editor GUI & Rust Settings Hub
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-config-editor"))
 hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-config-editor"))
 hl.bind(mainMod .. " + " .. "SHIFT" .. " + C", hl.dsp.exec_cmd(homeDir .. "/.config/carbon/scripts/carbon-settings-hub"))
 
