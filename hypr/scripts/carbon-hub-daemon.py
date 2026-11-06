@@ -354,7 +354,6 @@ def handle_request(req):
             rel_map = {
                 "minimal": "configs/keybinds-minimal.conf",
                 "notch": "configs/keybinds-notch.conf",
-                "pill": "configs/keybinds-pill.conf",
                 "vanish": "configs/keybinds-vanish.conf",
                 "nucleus": "configs/keybinds-vanish.conf",
                 "shell": "keybinds-shell-only.conf",
@@ -389,7 +388,6 @@ def handle_request(req):
             rel_map = {
                 "minimal": "configs/keybinds-minimal.conf",
                 "notch": "configs/keybinds-notch.conf",
-                "pill": "configs/keybinds-pill.conf",
                 "vanish": "configs/keybinds-vanish.conf",
                 "nucleus": "configs/keybinds-vanish.conf",
                 "shell": "keybinds-shell-only.conf",

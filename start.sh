@@ -119,10 +119,9 @@ set_active_mode() {
     local style="minimal"
     case "${req_mode,,}" in
         notch|island) norm_mode="notch"; style="notch" ;;
-        pill|waybar) norm_mode="pill"; style="pill" ;;
         vanish|nucleus) norm_mode="nucleus"; style="nucleus" ;;
-        minimal|minimal_notch|tide) norm_mode="minimal_notch"; style="minimal" ;;
-        *) die "Invalid mode '$req_mode'. Valid modes: minimal_notch, notch, pill, vanish" ;;
+        minimal|minimal_notch|tide|pill|waybar) norm_mode="minimal_notch"; style="minimal" ;;
+        *) die "Invalid mode '$req_mode'. Valid modes: minimal_notch, notch, vanish" ;;
     esac
 
     mkdir -p "$CONFIG_DIR" "$HYPR_CONFIG_DIR"

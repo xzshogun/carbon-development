@@ -1003,7 +1003,6 @@ async fn handle_request(req: HubRequest) -> HubResponse {
             let scope = req.scope.unwrap_or_else(|| "minimal".into());
             let rel_path = match scope.as_str() {
                 "notch" => "configs/keybinds-notch.conf",
-                "pill" => "configs/keybinds-pill.conf",
                 "vanish" | "nucleus" => "configs/keybinds-vanish.conf",
                 "shell" => "keybinds-shell-only.conf",
                 "default" => "keybinds.conf",
@@ -1053,7 +1052,6 @@ async fn handle_request(req: HubRequest) -> HubResponse {
             let scope = req.scope.unwrap_or_else(|| "minimal".into());
             let rel_path = match scope.as_str() {
                 "notch" => "configs/keybinds-notch.conf",
-                "pill" => "configs/keybinds-pill.conf",
                 "vanish" | "nucleus" => "configs/keybinds-vanish.conf",
                 "shell" => "keybinds-shell-only.conf",
                 "default" => "keybinds.conf",

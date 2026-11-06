@@ -131,12 +131,6 @@ def get_all_mode_keybinds() -> dict:
             "description": "Centered dynamic notch with Center Dashboard, Spotlight, Quick Controls, and standard arrow focus navigation.",
             "binds": parse_hypr_keybinds(configs_dir / "keybinds-notch.conf"),
         },
-        "pill": {
-            "label": "Pill Bar",
-            "file": "hypr/configs/keybinds-pill.conf",
-            "description": "Floating Material 3 pill bar with isolated Spotlight, Quick Controls, and standard window focus navigation.",
-            "binds": parse_hypr_keybinds(configs_dir / "keybinds-pill.conf"),
-        },
         "vanish": {
             "label": "Vanish Hub (Nucleus)",
             "file": "hypr/configs/keybinds-vanish.conf",
@@ -166,7 +160,7 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
     SANDBOX_BASE.mkdir(parents=True, exist_ok=True)
 
     modes_to_test = (
-        ["minimal_notch", "notch", "pill", "vanish"]
+        ["minimal_notch", "notch", "vanish"]
         if selected_mode == "all"
         else [selected_mode]
     )
@@ -228,7 +222,7 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
         )
 
         # Verify current-mode-keybinds.conf matches the mode's template
-        norm_map = {"minimal_notch": "minimal", "notch": "notch", "pill": "pill", "vanish": "vanish"}
+        norm_map = {"minimal_notch": "minimal", "notch": "notch", "vanish": "vanish"}
         norm_m = norm_map.get(m, "minimal")
         template_file = REPO_DIR / "hypr" / "configs" / f"keybinds-{norm_m}.conf"
         active_mode_conf = SANDBOX_BASE / "carbon" / "configs" / "current-mode-keybinds.conf"
@@ -269,7 +263,6 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
         SANDBOX_BASE / "carbon" / "keybinds.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-minimal.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-notch.conf",
-        SANDBOX_BASE / "carbon" / "configs" / "keybinds-pill.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-vanish.conf",
     ]
     kb_texts = [p.read_text() for p in all_kb_files if p.exists()]
@@ -397,7 +390,6 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
         SANDBOX_BASE / "carbon" / "keybinds.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-minimal.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-notch.conf",
-        SANDBOX_BASE / "carbon" / "configs" / "keybinds-pill.conf",
         SANDBOX_BASE / "carbon" / "configs" / "keybinds-vanish.conf",
     ]
     wasd_clashes = []
@@ -439,7 +431,7 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
     )
 
     # 6. Test Start Command (start.sh / carbon-start --dry-run)
-    start_target_mode = "pill" if modes_to_test[-1] != "pill" else "notch"
+    start_target_mode = "notch" if modes_to_test[-1] != "notch" else "minimal_notch"
     start_cmd = [
         "bash",
         str(REPO_DIR / "start.sh"),
@@ -1005,7 +997,10 @@ HTML_PAGE = r"""<!doctype html>
       <button type="button" data-tab="audit" onclick="switchTab('audit')">Installer & Shell Audit</button>
       <button type="button" data-tab="files" onclick="switchTab('files')">Generated Configs</button>
     </nav>
-    <button type="button" id="runAllBtn" class="primary-cta" onclick="runSandbox('all')">Run Full Sandbox Suite</button>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a href="/carbon-shell-dev.tar.gz" download="carbon-shell-dev.tar.gz" class="primary-cta" style="text-decoration:none; display:inline-block; background:#22C55E; color:#06110B;">⬇ Download Fix (.tar.gz)</a>
+      <button type="button" id="runAllBtn" class="primary-cta" onclick="runSandbox('all')">Run Full Sandbox Suite</button>
+    </div>
   </header>
 
   <main class="container">
@@ -1018,8 +1013,8 @@ HTML_PAGE = r"""<!doctype html>
       </div>
       <div class="stat-box">
         <div class="stat-label">Isolated Shell Modes</div>
-        <div class="stat-value tabular">4 Modes</div>
-        <div class="stat-sub">Minimal · Notch · Pill · Vanish</div>
+        <div class="stat-value tabular">3 Modes</div>
+        <div class="stat-sub">Minimal · Notch · Vanish</div>
       </div>
       <div class="stat-box">
         <div class="stat-label">Audit Issues Resolved</div>
@@ -1045,10 +1040,9 @@ HTML_PAGE = r"""<!doctype html>
 
         <div class="controls-row">
           <div class="segmented" role="group" aria-label="Mode Filter">
-            <button type="button" class="mode-run-btn active" data-mode="all" onclick="selectRunMode('all')">All 4 Modes</button>
+            <button type="button" class="mode-run-btn active" data-mode="all" onclick="selectRunMode('all')">All 3 Modes</button>
             <button type="button" class="mode-run-btn" data-mode="minimal_notch" onclick="selectRunMode('minimal_notch')">Minimal Island</button>
             <button type="button" class="mode-run-btn" data-mode="notch" onclick="selectRunMode('notch')">Carbon Notch</button>
-            <button type="button" class="mode-run-btn" data-mode="pill" onclick="selectRunMode('pill')">Pill Bar</button>
             <button type="button" class="mode-run-btn" data-mode="vanish" onclick="selectRunMode('vanish')">Vanish Hub</button>
           </div>
 
@@ -1116,7 +1110,7 @@ cd carbon-development
         <div class="audit-item">
           <div class="audit-title">Lifecycle Commands Installed to ~/.local/bin</div>
           <pre class="code-viewer">carbon-start                        # Start or restart Carbon Shell
-carbon-start --mode=pill            # Switch mode (minimal_notch, notch, pill, vanish) + sync isolated keybinds
+carbon-start --mode=notch           # Switch mode (minimal_notch, notch, vanish) + sync isolated keybinds
 carbon-start status                 # Check shell status and active mode
 carbon-update                       # Pull latest updates from xzshogun/carbon-development (with live mirror fallback)
 carbon-uninstall                    # Safely unhook from hyprland.conf, backup, and remove Carbon Shell</pre>
@@ -1138,7 +1132,6 @@ carbon-uninstall                    # Safely unhook from hyprland.conf, backup, 
           <div class="segmented" id="modeKeybindTabs">
             <button type="button" class="active" data-kmode="minimal_notch" onclick="renderKeybindMode('minimal_notch')">Minimal Island (Tide)</button>
             <button type="button" data-kmode="notch" onclick="renderKeybindMode('notch')">Carbon Notch</button>
-            <button type="button" data-kmode="pill" onclick="renderKeybindMode('pill')">Pill Bar</button>
             <button type="button" data-kmode="vanish" onclick="renderKeybindMode('vanish')">Vanish Hub (Nucleus)</button>
             <button type="button" data-kmode="base_keep" onclick="renderKeybindMode('base_keep')">Base: Keep Existing</button>
             <button type="button" data-kmode="base_carbon" onclick="renderKeybindMode('base_carbon')">Base: Full Carbon</button>

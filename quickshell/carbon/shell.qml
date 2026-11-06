@@ -993,7 +993,7 @@ ShellRoot {
                     if (target === "three_islands") target = "notch"
                     if (target === "vanish") target = "nucleus"
                     if (target === "island") target = "notch"
-                    if (target === "minimal") target = "minimal_notch"
+                    if (target === "minimal" || target === "pill" || target === "waybar") target = "minimal_notch"
                     if (root.barMode !== target) {
                         console.log("[BAR-MODE] Switching mode from", root.barMode, "to", target)
                         root.barMode = target
@@ -1011,7 +1011,7 @@ ShellRoot {
                 if (d.showWorkspaceOsd !== undefined) {
                     root.showWorkspaceOsd = Boolean(d.showWorkspaceOsd)
                 }
-                if (root.barMode === "pill" || root.barMode === "minimal" || root.barMode === "minimal_notch") {
+                if (root.barMode === "minimal" || root.barMode === "minimal_notch") {
                     if (root.mainBarEdge !== "top" && root.mainBarEdge !== "bottom") {
                         root.mainBarEdge = "top"
                         root.barEdge = "top"
@@ -1031,7 +1031,7 @@ ShellRoot {
         if (m === "three_islands") m = "notch"
         if (m === "vanish") m = "nucleus"
         if (m === "island") m = "notch"
-        if (m === "minimal") m = "minimal_notch"
+        if (m === "minimal" || m === "pill" || m === "waybar") m = "minimal_notch"
         if (m === "nucleus" && root.barMode !== "nucleus" && root.nucleusTransitionEnabled) {
             root.startNucleusTransition(false)
             return

@@ -136,14 +136,15 @@ create_safety_backup() {
     local bdir="$CONFIG_DIR/backups"
     local bfile="$bdir/carbon-backup-$(date +'%Y%m%d_%H%M%S').tar.gz"
     mkdir -p "$bdir"
+    find "$bdir" -name "carbon-backup-*.tar.gz" -size +15M -delete 2>/dev/null || true
     if [[ "$DRY_RUN" -eq 1 ]]; then
-        tar -czf "$bfile" -C "$ARCHIVE_BASE_DIR" "quickshell" "carbon" "hypr" 2>/dev/null || true
+        tar -czf "$bfile" --exclude="carbon/backups" --exclude="carbon/assets" -C "$ARCHIVE_BASE_DIR" "quickshell" "carbon" "hypr" 2>/dev/null || true
     else
-        tar -czf "$bfile" -C "$HOME" ".local/share/quickshell/carbon" ".config/carbon" ".config/hypr/scripts" 2>/dev/null || true
+        tar -czf "$bfile" --exclude=".config/carbon/backups" --exclude=".config/carbon/assets" -C "$HOME" ".local/share/quickshell/carbon" ".config/carbon" ".config/hypr/scripts" 2>/dev/null || true
     fi
     if [[ -f "$bfile" ]]; then
         ok "Safety backup created: $(basename "$bfile")"
-        ls -1t "$bdir"/carbon-backup-*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f
+        ls -1t "$bdir"/carbon-backup-*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f
     fi
 }
 
@@ -276,10 +277,6 @@ if [[ "$NO_GIT" -eq 0 && -d "$REPO_DIR/.git" ]]; then
     else
         create_safety_backup
     fi
-
-    if [[ "$DRY_RUN" -eq 0 && "$CHECK_ONLY" -eq 0 ]]; then
-        curl -fsSL --max-time 8 "$DEFAULT_TARBALL_URL" | tar -xz -C "$REPO_DIR" 2>/dev/null || true
-    fi
 else
     if [[ "$NO_GIT" -eq 0 && "$DRY_RUN" -eq 0 && "$CHECK_ONLY" -eq 0 ]]; then
         info "Fetching latest staging snapshot from $DEFAULT_TARBALL_URL..."
@@ -390,6 +387,14 @@ for j in "$REPO_DIR/hypr/"*.json; do
     [[ -f "$j" ]] || continue
     target="$CONFIG_DIR/$(basename "$j")"
     [[ ! -f "$target" ]] && cp -f "$j" "$target"
+done
+
+# Remove deprecated Pill mode keybind files and migrate any 'pill' mode state to 'minimal_notch'
+rm -f "$CONFIG_DIR/configs/keybinds-pill.conf" "$CONFIG_DIR/configs/keybinds-pill.conf.dist" "$HYPR_CONFIG_DIR/configs/keybinds-pill.conf" 2>/dev/null || true
+for bm_json in "$CONFIG_DIR/carbon-bar-mode.json" "$HYPR_CONFIG_DIR/carbon-bar-mode.json"; do
+    if [[ -f "$bm_json" ]] && grep -Fq '"pill"' "$bm_json" 2>/dev/null; then
+        sed -i 's/"mode":[[:space:]]*"pill"/"mode": "minimal_notch"/g; s/"islandStyle":[[:space:]]*"pill"/"islandStyle": "minimal"/g' "$bm_json" 2>/dev/null || true
+    fi
 done
 
 # Ensure carbon.conf sources current-mode-keybinds.conf and initializes touchpad gestures

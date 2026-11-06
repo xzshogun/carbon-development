@@ -27,21 +27,15 @@ if [ -z "$MODE" ]; then
     fi
 fi
 
-# Normalize mode name across all 4 distinct shell modes
+# Normalize mode name across the 3 distinct shell modes (minimal, notch, vanish)
 case "${MODE,,}" in
     notch|island|three_islands)
         NORM_MODE="notch"
         ;;
-    pill|waybar)
-        NORM_MODE="pill"
-        ;;
     vanish|nucleus)
         NORM_MODE="vanish"
         ;;
-    minimal|minimal_notch|tide)
-        NORM_MODE="minimal"
-        ;;
-    *)
+    minimal|minimal_notch|tide|pill|waybar|*)
         NORM_MODE="minimal"
         ;;
 esac

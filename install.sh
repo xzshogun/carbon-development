@@ -265,13 +265,11 @@ if [[ -z "$SHELL_MODE" ]]; then
         printf "\n  Select initial shell mode:\n"
         printf "    [1] Minimal Island / Tide (Default)\n"
         printf "    [2] Carbon Notch\n"
-        printf "    [3] Pill Bar\n"
-        printf "    [4] Vanish Hub (Nucleus)\n\n"
-        MODE_CHOICE="$(prompt_choice "  Select mode [1-4] (Default: 1): " "1")"
+        printf "    [3] Vanish Hub (Nucleus)\n\n"
+        MODE_CHOICE="$(prompt_choice "  Select mode [1-3] (Default: 1): " "1")"
         case "$MODE_CHOICE" in
             2) SHELL_MODE="notch" ;;
-            3) SHELL_MODE="pill" ;;
-            4) SHELL_MODE="vanish" ;;
+            3) SHELL_MODE="vanish" ;;
             *) SHELL_MODE="minimal_notch" ;;
         esac
     fi
@@ -280,7 +278,6 @@ fi
 # Normalize SHELL_MODE for JSON state
 case "${SHELL_MODE,,}" in
     notch|island) BAR_JSON_MODE="notch"; ISLAND_STYLE="notch" ;;
-    pill|waybar) BAR_JSON_MODE="pill"; ISLAND_STYLE="pill" ;;
     vanish|nucleus) BAR_JSON_MODE="nucleus"; ISLAND_STYLE="nucleus" ;;
     *) BAR_JSON_MODE="minimal_notch"; ISLAND_STYLE="minimal" ;;
 esac

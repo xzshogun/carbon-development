@@ -296,7 +296,6 @@ class InstallerWindow(Adw.ApplicationWindow):
         modes = [
             ("minimal_notch", "Minimal Island (Tide)", "Dynamic top island notch with clock, media, and status controls"),
             ("notch", "Carbon Notch", "Centered dynamic island with integrated workspace and dashboard triggers"),
-            ("pill", "Pill Bar", "Floating horizontal pill with system tray and media integration"),
             ("vanish", "Vanish Hub", "Edge-hidden satellite launcher that appears on demand"),
         ]
 

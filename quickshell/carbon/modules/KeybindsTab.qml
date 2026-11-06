@@ -11,7 +11,6 @@ import "../Singletons"
  * Allows editing each isolated mode keybind file separately so modes never clash:
  *   - minimal:  ~/.config/carbon/configs/keybinds-minimal.conf
  *   - notch:    ~/.config/carbon/configs/keybinds-notch.conf
- *   - pill:     ~/.config/carbon/configs/keybinds-pill.conf
  *   - vanish:   ~/.config/carbon/configs/keybinds-vanish.conf
  *   - shell:    ~/.config/carbon/keybinds-shell-only.conf
  *   - default:  ~/.config/carbon/keybinds.conf
@@ -41,7 +40,6 @@ Item {
     readonly property var scopeList: [
         { id: "minimal",  label: "Minimal / Tide",      badge: "MODE",    relPath: "configs/keybinds-minimal.conf",  desc: "Active only when Minimal Island / Tide mode is selected." },
         { id: "notch",    label: "Carbon Notch",        badge: "MODE",    relPath: "configs/keybinds-notch.conf",    desc: "Active only when Carbon Notch mode is selected." },
-        { id: "pill",     label: "Pill Mode",           badge: "MODE",    relPath: "configs/keybinds-pill.conf",     desc: "Active only when Pill / Waybar mode is selected." },
         { id: "vanish",   label: "Vanish / Nucleus",    badge: "MODE",    relPath: "configs/keybinds-vanish.conf",   desc: "Active only when Vanish / Nucleus radial mode is selected." },
         { id: "shell",    label: "Default (Shell Base)",badge: "DEFAULT", relPath: "keybinds-shell-only.conf",       desc: "Core Carbon Shell shortcuts shared across modes (Settings Hub, Focus HUD, Fullscreen)." },
         { id: "default",  label: "Default (Full Suite)",badge: "DEFAULT", relPath: "keybinds.conf",                  desc: "Complete Hyprland default keybinds (apps, workspaces, window management, media keys)." },
