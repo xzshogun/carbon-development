@@ -255,25 +255,24 @@ if [[ "$NO_GIT" -eq 0 && -d "$REPO_DIR/.git" ]]; then
     fi
 
     if [[ "$COMMITS_AHEAD" -gt 0 && "$DRY_RUN" -eq 0 ]]; then
-        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
-            git add -A
-            git commit -m "chore(local): auto-snapshot before update ($(date +'%Y-%m-%d %H:%M:%S'))" --quiet
-        fi
         create_safety_backup
 
-        if [[ "$CURRENT_BRANCH" != "$REMOTE_TARGET" ]]; then
-            git merge --no-edit "$UPSTREAM/$REMOTE_TARGET" --quiet 2>/dev/null || {
-                git merge --abort 2>/dev/null || true
-                die "Merge conflict detected. Update aborted without modifying working branch."
-            }
-        else
-            if git merge-base --is-ancestor HEAD "$REMOTE_HASH" 2>/dev/null; then
-                git merge --ff-only "$REMOTE_HASH" --quiet
-            else
-                git merge --no-edit "$REMOTE_HASH" --quiet 2>/dev/null || git pull "$UPSTREAM" "$REMOTE_TARGET" --quiet
-            fi
+        git merge --abort 2>/dev/null || true
+        git rebase --abort 2>/dev/null || true
+
+        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+            git stash push -u -m "carbon-update-autostash-$(date +'%Y%m%d_%H%M%S')" --quiet 2>/dev/null || true
         fi
-        ok "Working tree updated"
+
+        if git merge-base --is-ancestor HEAD "$REMOTE_HASH" 2>/dev/null; then
+            git merge --ff-only "$REMOTE_HASH" --quiet 2>/dev/null || git reset --hard "$REMOTE_HASH" --quiet
+        else
+            git merge -X theirs --no-edit "$REMOTE_HASH" --quiet 2>/dev/null || {
+                git merge --abort 2>/dev/null || true
+                git reset --hard "$REMOTE_HASH" --quiet
+            }
+        fi
+        ok "Working tree updated to ${REMOTE_HASH:0:8}"
     else
         create_safety_backup
     fi
