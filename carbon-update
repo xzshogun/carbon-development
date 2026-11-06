@@ -294,6 +294,10 @@ msg "Updating Quickshell components..."
 mkdir -p "$QUICKSHELL_DIR"
 cp -rf "$REPO_DIR/quickshell/carbon/"* "$QUICKSHELL_DIR/"
 chmod +x "$QUICKSHELL_DIR/scripts/"* 2>/dev/null || true
+if [[ "$DRY_RUN" -eq 0 ]]; then
+    mkdir -p "$HOME/.config/quickshell" 2>/dev/null || true
+    ln -sfn "$QUICKSHELL_DIR" "$HOME/.config/quickshell/carbon" 2>/dev/null || true
+fi
 ok "Quickshell updated"
 
 # Synchronize shell assets
@@ -324,7 +328,7 @@ for src in "$REPO_DIR/hypr/configs/"*; do
         cp -f "$src" "$dst"
     else
         cp -f "$src" "$dst.dist" 2>/dev/null || true
-        if [[ "$name" == keybinds-*.conf || "$name" == "keybinds.conf" ]]; then
+        if [[ "$name" == keybinds-*.conf || "$name" == "keybinds.conf" || "$name" == "gestures.conf" ]]; then
             cp -f "$src" "$dst"
         fi
     fi
@@ -339,9 +343,12 @@ for conf in windowrules.conf looknfeel.conf keybinds.conf keybinds-shell-only.co
             cp -f "$src" "$dst"
         else
             cp -f "$src" "$dst.dist" 2>/dev/null || true
-            # Migrate keybinds.conf in place for SUPER+K Focus Mode, SUPER+SHIFT+C Settings Hub, and unbinding hyprpicker
+            # Migrate keybinds.conf in place for SUPER+K Focus Mode, SUPER+SHIFT+C Settings Hub, SUPER+F Fullscreen, and unbinding WASD / hyprpicker
             if [[ "$conf" == "keybinds.conf" ]]; then
                 sed -i '/hyprpicker -a/d' "$dst" 2>/dev/null || true
+                sed -i 's|bind = \$mainMod, F, exec, firefox|bind = \$mainMod, F, fullscreen,|g' "$dst" 2>/dev/null || true
+                sed -i '/bind = \$mainMod, [AWS], movewindow,/d' "$dst" 2>/dev/null || true
+                sed -i 's|bind = \$mainMod, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|bind = \$mainMod SHIFT, D, exec, sh ~/.config/carbon/scripts/carbon-show-desktop.sh|g' "$dst" 2>/dev/null || true
                 sed -i 's|bind = \$mainMod SHIFT, F, exec, .*carbon-focus\.sh|bind = \$mainMod, K, exec, ~/.config/carbon/scripts/carbon-focus.sh|g' "$dst" 2>/dev/null || true
                 if ! grep -Fq "carbon-settings-hub" "$dst" 2>/dev/null; then
                     sed -i '/carbon-config-editor/a bind = $mainMod SHIFT, C, exec, ~/.config/carbon/scripts/carbon-settings-hub' "$dst" 2>/dev/null || true
@@ -360,7 +367,7 @@ for j in "$REPO_DIR/hypr/"*.json; do
     [[ ! -f "$target" ]] && cp -f "$j" "$target"
 done
 
-# Ensure carbon.conf sources current-mode-keybinds.conf if migrating from legacy vanish-keybinds.conf
+# Ensure carbon.conf sources current-mode-keybinds.conf and initializes touchpad gestures
 if [[ -f "$CONFIG_DIR/carbon.conf" ]]; then
     if grep -Fq "configs/vanish-keybinds.conf" "$CONFIG_DIR/carbon.conf"; then
         sed -i 's|configs/vanish-keybinds.conf|configs/current-mode-keybinds.conf|g' "$CONFIG_DIR/carbon.conf"
@@ -368,6 +375,9 @@ if [[ -f "$CONFIG_DIR/carbon.conf" ]]; then
     fi
     if ! grep -Fq "carbon-hub.service" "$CONFIG_DIR/carbon.conf"; then
         sed -i '/carbon-quickshell.service/a exec-once = systemctl --user start carbon-hub.service' "$CONFIG_DIR/carbon.conf" 2>/dev/null || true
+    fi
+    if ! grep -Fq "carbon-gestures-init.sh" "$CONFIG_DIR/carbon.conf"; then
+        printf "\nexec = ~/.config/carbon/scripts/carbon-gestures-init.sh\n" >> "$CONFIG_DIR/carbon.conf" 2>/dev/null || true
     fi
 fi
 
@@ -440,15 +450,19 @@ fi
 # Reload services
 if [[ "$NO_RELOAD" -eq 0 && "$DRY_RUN" -eq 0 ]]; then
     if prompt_confirm "Restart Carbon Quickshell and reload Hyprland now? [Y/n]: " "Y"; then
-        if command -v systemctl >/dev/null 2>&1 && systemctl --user is-enabled carbon-quickshell.service >/dev/null 2>&1; then
-            systemctl --user restart carbon-quickshell.service >/dev/null 2>&1 || true
-            systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
+        if [[ -x "$BIN_DIR/carbon-start" ]]; then
+            "$BIN_DIR/carbon-start" restart || true
         else
-            pkill -x quickshell 2>/dev/null || true
-            sleep 0.5
-            nohup quickshell --config "$QUICKSHELL_DIR" >/dev/null 2>&1 &
+            if command -v systemctl >/dev/null 2>&1 && systemctl --user is-enabled carbon-quickshell.service >/dev/null 2>&1; then
+                systemctl --user restart carbon-quickshell.service >/dev/null 2>&1 || true
+                systemctl --user restart carbon-hub.service >/dev/null 2>&1 || true
+            fi
+            sleep 0.6
+            if ! pgrep -x quickshell >/dev/null 2>&1; then
+                nohup quickshell -p "$QUICKSHELL_DIR" >/tmp/carbon-quickshell.log 2>&1 &
+            fi
+            command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true
         fi
-        command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true
         ok "Services reloaded"
     fi
 fi

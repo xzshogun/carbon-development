@@ -71,96 +71,91 @@ TARGET_CARBON_LUA="$CARBON_DIR/current-mode-keybinds.lua"
 
 # 1. Update Hyprland Conf format in both external Carbon config dir and Hyprland config dir
 if [ -n "$SOURCE_CONF" ] && [ -f "$SOURCE_CONF" ]; then
-    cp -f "$SOURCE_CONF" "$TARGET_CARBON_CONF"
-    cp -f "$SOURCE_CONF" "$TARGET_HYPR_CONF"
+    if [ "$(realpath "$SOURCE_CONF" 2>/dev/null || echo "$SOURCE_CONF")" != "$(realpath "$TARGET_CARBON_CONF" 2>/dev/null || echo "$TARGET_CARBON_CONF")" ]; then
+        cp -f "$SOURCE_CONF" "$TARGET_CARBON_CONF"
+    fi
+    if [ "$(realpath "$SOURCE_CONF" 2>/dev/null || echo "$SOURCE_CONF")" != "$(realpath "$TARGET_HYPR_CONF" 2>/dev/null || echo "$TARGET_HYPR_CONF")" ]; then
+        cp -f "$SOURCE_CONF" "$TARGET_HYPR_CONF"
+    fi
 else
     echo "# Mode keybinds for $NORM_MODE (empty)" > "$TARGET_CARBON_CONF"
     echo "# Mode keybinds for $NORM_MODE (empty)" > "$TARGET_HYPR_CONF"
 fi
 
-# 2. Update Hyprland Lua format
+# 2. Update Hyprland Lua format directly from the active mode .conf file (with clean fallback)
 python3 -c '
 import sys, os
 
 mode = sys.argv[1]
-lua_files = [sys.argv[2], sys.argv[3]]
+conf_path = sys.argv[2]
+lua_files = [sys.argv[3], sys.argv[4]]
 home = os.environ.get("HOME", os.path.expanduser("~"))
 carbon_dir = os.environ.get("CARBON_CONFIG_DIR", os.path.join(home, ".config/carbon"))
 
-lua_bindings = {
-    "minimal": f"""-- Active Mode: Minimal Notch / Tide Island
-hl.bind("SUPER + SHIFT + E", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide toggleControlCenter"))
-hl.bind("SUPER + R", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide toggleApplicationLauncher"))
-hl.bind("SUPER + M", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide togglePlayer"))
-hl.bind("SUPER + N", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide toggleWallpaperPicker"))
-hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide toggleNotificationCenter"))
-hl.bind("SUPER + SHIFT + P", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide togglePowerMenu"))
-hl.bind("SUPER + Tab", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call overview toggle"))
-hl.bind("SUPER + Down", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide showClock"))
-hl.bind("SUPER + Right", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide swipeRight"))
-hl.bind("SUPER + Left", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide swipeLeft"))
-hl.bind("SUPER + B", hl.dsp.exec_cmd("/usr/bin/quickshell ipc --any-display -p {home}/.local/share/quickshell/carbon call tide toggle"))
-hl.bind("SUPER + K", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-focus.sh"))
-hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-settings-hub"))
-hl.bind("SUPER + Up", hl.dsp.focus({{ direction = "up" }}))
-hl.bind("SUPER + ALT + Left", hl.dsp.focus({{ direction = "left" }}))
-hl.bind("SUPER + ALT + Right", hl.dsp.focus({{ direction = "right" }}))
-hl.bind("SUPER + ALT + Up", hl.dsp.focus({{ direction = "up" }}))
-hl.bind("SUPER + ALT + Down", hl.dsp.focus({{ direction = "down" }}))
-""",
-    "notch": f"""-- Active Mode: Carbon Notch
-hl.bind("SUPER + B", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh center-dashboard"))
-hl.bind("SUPER + K", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-focus.sh"))
-hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-settings-hub"))
-hl.bind("SUPER + R", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh spotlight"))
-hl.bind("SUPER + SHIFT + B", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh controls"))
-hl.bind("SUPER + SHIFT + P", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh power"))
-hl.bind("SUPER + Left", hl.dsp.window.move({{ direction = "l" }}))
-hl.bind("SUPER + Right", hl.dsp.window.move({{ direction = "r" }}))
-hl.bind("SUPER + Up", hl.dsp.window.move({{ direction = "u" }}))
-hl.bind("SUPER + Down", hl.dsp.window.move({{ direction = "d" }}))
-""",
-    "pill": f"""-- Active Mode: Pill / Waybar
-hl.bind("SUPER + B", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh controls"))
-hl.bind("SUPER + K", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-focus.sh"))
-hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-settings-hub"))
-hl.bind("SUPER + R", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh toggle-spotlight"))
-hl.bind("SUPER + Left", hl.dsp.window.move({{ direction = "l" }}))
-hl.bind("SUPER + Right", hl.dsp.window.move({{ direction = "r" }}))
-hl.bind("SUPER + Up", hl.dsp.window.move({{ direction = "u" }}))
-hl.bind("SUPER + Down", hl.dsp.window.move({{ direction = "d" }}))
-""",
-    "vanish": f"""-- Active Mode: Vanish / Nucleus
-hl.bind("SUPER + Super_L", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-vanish-dispatch.sh toggle-hub"), {{ release = true }})
-hl.bind("SUPER + Super_R", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-vanish-dispatch.sh toggle-hub"), {{ release = true }})
-hl.bind("SUPER + R", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-ipc.sh spotlight"))
-hl.bind("SUPER + K", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-focus.sh"))
-hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("{carbon_dir}/scripts/carbon-settings-hub"))
-hl.bind("SUPER + M", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-vanish-dispatch.sh lyrics"))
-hl.bind("SUPER + W", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-ipc.sh wallpaper"))
-hl.bind("SUPER + A", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-vanish-dispatch.sh focus-alerts"))
-hl.bind("SUPER + B", hl.dsp.exec_cmd("sh {carbon_dir}/scripts/carbon-vanish-dispatch.sh quick-toggles"))
-hl.bind("SUPER + Left", hl.dsp.window.move({{ direction = "l" }}))
-hl.bind("SUPER + Right", hl.dsp.window.move({{ direction = "r" }}))
-hl.bind("SUPER + Up", hl.dsp.window.move({{ direction = "u" }}))
-hl.bind("SUPER + Down", hl.dsp.window.move({{ direction = "d" }}))
-"""
-}
+lines_out = [f"-- Active Mode: {mode} (synchronized from {os.path.basename(conf_path) if conf_path else mode})"]
 
-content = lua_bindings.get(mode, lua_bindings["minimal"])
+if conf_path and os.path.exists(conf_path):
+    with open(conf_path, "r", encoding="utf-8", errors="ignore") as f:
+        for raw in f:
+            s = raw.strip()
+            if not s or s.startswith("#") or s.startswith("$"):
+                continue
+            if "=" not in s:
+                continue
+            lhs, rhs = s.split("=", 1)
+            btype = lhs.strip()
+            if not btype.startswith("bind"):
+                continue
+            parts = [p.strip() for p in rhs.split(",")]
+            if len(parts) < 3:
+                continue
+            mods = parts[0].replace("$mainMod", "SUPER").strip()
+            key = parts[1].strip()
+            disp = parts[2].strip()
+            arg = ",".join(parts[3:]).strip() if len(parts) > 3 else ""
+            combo_tokens = [t for t in mods.split() if t]
+            if key:
+                combo_tokens.append(key)
+            combo = " + ".join(combo_tokens)
+            opts = []
+            if "r" in btype[4:]:
+                opts.append("release = true")
+            if "e" in btype[4:]:
+                opts.append("repeating = true")
+            if "l" in btype[4:]:
+                opts.append("locked = true")
+            opt_str = (", { " + ", ".join(opts) + " }") if opts else ""
+            if disp == "exec":
+                cmd_escaped = arg.replace("\\", "\\\\").replace("\"", "\\\"")
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.exec_cmd(\"{cmd_escaped}\"){opt_str})")
+            elif disp == "fullscreen":
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.fullscreen(){opt_str})")
+            elif disp == "movefocus":
+                dmap = {"l": "left", "r": "right", "u": "up", "d": "down"}
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.focus({{ direction = \"{dmap.get(arg, arg)}\" }}){opt_str})")
+            elif disp == "movewindow":
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.window.move({{ direction = \"{arg}\" }}){opt_str})")
+            else:
+                cmd_escaped = f"hyprctl dispatch {disp} {arg}".strip().replace("\\", "\\\\").replace("\"", "\\\"")
+                lines_out.append(f"hl.bind(\"{combo}\", hl.dsp.exec_cmd(\"{cmd_escaped}\"){opt_str})")
+
+content = "\n".join(lines_out) + "\n"
 for lf in lua_files:
     try:
         os.makedirs(os.path.dirname(lf), exist_ok=True)
-        with open(lf, "w") as f:
+        with open(lf, "w", encoding="utf-8") as f:
             f.write(content)
     except Exception:
         pass
-' "$NORM_MODE" "$TARGET_LUA" "$TARGET_CARBON_LUA"
+' "$NORM_MODE" "$TARGET_CARBON_CONF" "$TARGET_LUA" "$TARGET_CARBON_LUA"
 
-# 3. Instant reload of Hyprland keybinds (skip in sandbox / no-reload mode)
+# 3. Instant reload of Hyprland keybinds + gestures (skip in sandbox / no-reload mode)
 if [ "${CARBON_NO_RELOAD:-0}" != "1" ] && command -v hyprctl >/dev/null 2>&1; then
     if hyprctl instances >/dev/null 2>&1; then
         hyprctl reload >/dev/null 2>&1 || true
+        if [ -x "$CARBON_DIR/scripts/carbon-gestures-init.sh" ]; then
+            bash "$CARBON_DIR/scripts/carbon-gestures-init.sh" >/dev/null 2>&1 || true
+        fi
     fi
 fi
 

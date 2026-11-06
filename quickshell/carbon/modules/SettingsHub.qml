@@ -125,6 +125,7 @@ Item {
                             model: [
                                 { name: "Appearance", glyph: "󰏘", badge: "M3" },
                                 { name: "Modes", glyph: "󱐋", badge: "STUDIO" },
+                                { name: "Keybinds", glyph: "󰌌", badge: "MODES" },
                                 { name: "Panels & Canvas", glyph: "󰹑", badge: "PRO" },
                                 { name: "Display", glyph: "󰍹", badge: "" },
                                 { name: "Audio", glyph: "󰓃", badge: "" },
@@ -216,6 +217,11 @@ Item {
                     ModesTab {
                         anchors.fill: parent
                         visible: root.currentSection.toLowerCase() === "modes"
+                    }
+
+                    KeybindsTab {
+                        anchors.fill: parent
+                        visible: root.currentSection.toLowerCase() === "keybinds"
                     }
 
                     PanelsCanvasTab {

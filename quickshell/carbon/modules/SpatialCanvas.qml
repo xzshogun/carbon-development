@@ -22,7 +22,6 @@ import "../components"
 PanelWindow {
     id: spatialCanvasWindow
 
-    property var modelData: null
     property bool isOpen: false
     property bool animatingOut: false
     signal closeRequested()

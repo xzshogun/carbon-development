@@ -2511,6 +2511,22 @@ ShellRoot {
         }
     }
 
+    IpcHandler {
+        target: "settings"
+
+        function toggle() {
+            root.toggleSettingsHub();
+        }
+
+        function open() {
+            root.openSettingsHub();
+        }
+
+        function close() {
+            root.closeSettingsHub();
+        }
+    }
+
     /* Lock Screen */
     LockScreen {
         id: sessionLock
@@ -4194,7 +4210,6 @@ ShellRoot {
 
         FocusHUDBackground {
             required property var modelData
-            modelData: modelData
             screen: modelData
             visible: root.focusHudOpen
         }
@@ -4207,7 +4222,6 @@ ShellRoot {
         FocusHUD {
             id: focusHudInst
             required property var modelData
-            modelData: modelData
             screen: modelData
             visible: root.focusHudOpen
             onCloseRequested: root.closeFocusHud()
@@ -4222,7 +4236,6 @@ ShellRoot {
         CommandCenter {
             id: commandCenterInst
             required property var modelData
-            modelData: modelData
             screen: modelData
             barEdge: root.mainBarEdge
             barMode: root.barMode
@@ -4243,7 +4256,6 @@ ShellRoot {
         SpatialCanvas {
             id: spatialCanvasInst
             required property var modelData
-            modelData: modelData
             screen: modelData
             barEdge: root.mainBarEdge
             barMode: root.barMode

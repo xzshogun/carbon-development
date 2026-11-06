@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Carbon Settings Hub (Rust-backed Material 3 App — Super + Shift + C)
 CONFIG_DIR="${CARBON_CONFIG_DIR:-$HOME/.config/carbon}"
+QUICKSHELL_DIR="${HOME}/.local/share/quickshell/carbon"
 BIN_DIR="${HOME}/.local/bin"
 
-# Ensure the backend daemon (Rust carbon-hub-daemon or Python fallback) is listening on /tmp/carbon-hub.sock
+# 1. Ensure the backend daemon (Rust carbon-hub-daemon or Python fallback) is listening on /tmp/carbon-hub.sock
 if [ ! -S "/tmp/carbon-hub.sock" ]; then
     if [ -x "$BIN_DIR/carbon-hub-daemon" ]; then
         nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
@@ -15,6 +16,39 @@ if [ ! -S "/tmp/carbon-hub.sock" ]; then
         nohup python3 "${HOME}/.config/hypr/scripts/carbon-hub-daemon.py" >/dev/null 2>&1 &
     fi
     sleep 0.15
+fi
+
+# 2. Ensure Quickshell is running and listening on /tmp/carbon-shell.sock
+QS_BIN=""
+if [ -x "$BIN_DIR/quickshell" ]; then
+    QS_BIN="$BIN_DIR/quickshell"
+elif command -v quickshell >/dev/null 2>&1; then
+    QS_BIN="$(command -v quickshell)"
+elif [ -x "/usr/bin/quickshell" ]; then
+    QS_BIN="/usr/bin/quickshell"
+fi
+
+if ! pgrep -x quickshell >/dev/null 2>&1 && [ -n "$QS_BIN" ] && [ -d "$QUICKSHELL_DIR" ]; then
+    mkdir -p "$HOME/.config/quickshell" 2>/dev/null || true
+    ln -sfn "$QUICKSHELL_DIR" "$HOME/.config/quickshell/carbon" 2>/dev/null || true
+    nohup "$QS_BIN" -p "$QUICKSHELL_DIR" >/tmp/carbon-quickshell.log 2>&1 &
+    for _ in $(seq 1 15); do
+        [ -S "/tmp/carbon-shell.sock" ] && break
+        sleep 0.1
+    done
+fi
+
+# 3. Dispatch settings toggle over /tmp/carbon-shell.sock (and fallback to quickshell ipc)
+if [ -S "/tmp/carbon-shell.sock" ]; then
+    if [ -x "$CONFIG_DIR/scripts/carbon-ipc.sh" ]; then
+        sh "$CONFIG_DIR/scripts/carbon-ipc.sh" settings && exit 0
+    elif [ -x "${HOME}/.config/hypr/scripts/carbon-ipc.sh" ]; then
+        sh "${HOME}/.config/hypr/scripts/carbon-ipc.sh" settings && exit 0
+    fi
+fi
+
+if [ -n "$QS_BIN" ] && [ -d "$QUICKSHELL_DIR" ]; then
+    "$QS_BIN" ipc --any-display -p "$QUICKSHELL_DIR" call settings toggle >/dev/null 2>&1 && exit 0
 fi
 
 if [ -x "$CONFIG_DIR/scripts/carbon-ipc.sh" ]; then

@@ -351,6 +351,14 @@ source = ~/.config/carbon/power.conf
 source = ~/.config/carbon/$KB_FILE
 source = ~/.config/carbon/configs/current-mode-keybinds.conf
 
+input {
+    touchpad {
+        natural_scroll = true
+        disable_while_typing = true
+        tap-to-click = true
+    }
+}
+
 cursor {
     no_warps = true
 }
@@ -361,6 +369,8 @@ general {
     }
 }
 
+exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORM
+exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORM
 exec-once = systemctl --user start carbon-quickshell.service
 exec-once = systemctl --user start carbon-hub.service
 exec-once = bash -c 'wl-paste --watch cliphist store'
@@ -369,8 +379,9 @@ exec-once = hypridle -c ~/.config/carbon/hypridle.conf
 exec-once = ~/.config/carbon/scripts/portal.sh
 exec-once = ~/.config/carbon/scripts/carbon-audio-init.sh
 exec-once = ~/.config/carbon/scripts/carbon-snap-top.sh
+exec = ~/.config/carbon/scripts/carbon-gestures-init.sh
 EOF
-ok "Generated $CONFIG_DIR/carbon.conf (Base: $KB_FILE + isolated mode keybinds)"
+ok "Generated $CONFIG_DIR/carbon.conf (Base: $KB_FILE + isolated mode keybinds + touchpad gestures)"
 
 # Integrate with Hyprland without overwriting
 HYPR_MAIN="$HYPR_CONFIG_DIR/hyprland.conf"
@@ -394,6 +405,10 @@ msg "Deploying Quickshell assets..."
 mkdir -p "$QUICKSHELL_DIR"
 cp -rf "$REPO_DIR/quickshell/carbon/"* "$QUICKSHELL_DIR/"
 chmod +x "$QUICKSHELL_DIR/scripts/"* 2>/dev/null || true
+if [[ "$DRY_RUN" -eq 0 ]]; then
+    mkdir -p "$HOME/.config/quickshell" 2>/dev/null || true
+    ln -sfn "$QUICKSHELL_DIR" "$HOME/.config/quickshell/carbon" 2>/dev/null || true
+fi
 ok "Quickshell components deployed"
 
 # Deploy shell assets

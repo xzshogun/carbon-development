@@ -1,7 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import "../Singletons"
 
 /**
@@ -12,11 +14,32 @@ import "../Singletons"
  * synthesis (Rain & Brown Noise) + persistent Schematic Checklist, while also
  * syncing with the native `carbon-focus-engine` daemon when installed.
  */
-Item {
+PanelWindow {
     id: focusHud
 
-    property bool active: false
+    WlrLayershell.namespace: "carbon-focus-bar"
+    WlrLayershell.layer: WlrLayer.Top
+    aboveWindows: true
+    exclusionMode: ExclusionMode.Ignore
+    color: "transparent"
+
+    property bool open: visible
+    property bool active: visible
     property bool isRevealed: false
+    signal closeRequested()
+
+    anchors {
+        left: true
+        top: true
+        bottom: true
+    }
+    implicitWidth: 392
+
+    mask: Region {
+        item: focusHud.isRevealed ? controlDrawer : edgeSensor
+    }
+
+    WlrLayershell.keyboardFocus: (visible && focusHud.isRevealed) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // Settings synced with ~/.config/carbon/focus-settings.json (from Settings Hub -> Panels & Canvas)
     property bool leftEdgeHoverEnabled: true
@@ -489,6 +512,7 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             stopSession()
+                            focusHud.closeRequested()
                             if (typeof root !== "undefined" && root.closeFocusHud) {
                                 root.closeFocusHud()
                             } else {

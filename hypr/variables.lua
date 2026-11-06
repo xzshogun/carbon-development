@@ -17,7 +17,7 @@ return {
     touchpadDisableTyping      = true,
     touchpadScrollFactor       = 0.3,
     gestureFingers             = 3,
-    workspaceSwipeFingers      = 4,
+    workspaceSwipeFingers      = 3,
     gestureFingersMore         = 4,
 
     -- Blur
@@ -84,17 +84,16 @@ return {
     kbCloseWindow              = "SUPER + Q",
 
     -- Special workspaces toggles
-    kbSpecialWs                = "SUPER + S",
+    kbSpecialWs                = "SUPER + grave",
     kbSystemMonitorWs          = "CTRL + SHIFT + Escape",
     kbMusicWs                  = "SUPER + M",
-    -- kbCommunicationWs          = "SUPER + D",
-    kbCarbonDrop               = "SUPER + D",
+    kbCarbonDrop               = "SUPER + SHIFT + D",
     kbFocus                    = "SUPER + K",
     kbTodoWs                   = "SUPER + R",
 
     -- Apps
     kbTerminal                 = "SUPER + Return",
-    kbBrowser                  = "SUPER + B",
+    kbBrowser                  = "SUPER + SHIFT + B",
     kbEditor                   = "SUPER + C",
     kbPomodoro                 = "SUPER + P",
     kbFileExplorer             = "SUPER + SHIFT + E",
@@ -108,7 +107,7 @@ return {
     kbRestoreLock              = "SUPER + ALT + L",
     kbMenu                     = "SUPER + Space",
     kbScreenshot               = "SUPER + Print",
-    kbWallpaper                = "SUPER + W",
+    kbWallpaper                = "SUPER + N",
     kbKillProcess              = "CTRL + ALT + K",
     kbSettingsHub              = "SUPER + SHIFT + C",
     kbFloatingTerminal         = "SUPER + ALT + Return",

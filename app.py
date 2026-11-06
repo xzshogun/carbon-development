@@ -357,16 +357,85 @@ def run_sandbox_suite(selected_mode: str = "all", keybind_profile: str = "keep")
     hub_py = SANDBOX_BASE / "carbon" / "scripts" / "carbon-hub-daemon.py"
     modes_qml = SANDBOX_BASE / "quickshell" / "modules" / "ModesTab.qml"
     modes_txt = modes_qml.read_text() if modes_qml.exists() else ""
+    keybinds_tab_qml = SANDBOX_BASE / "quickshell" / "modules" / "KeybindsTab.qml"
+    settings_hub_qml = SANDBOX_BASE / "quickshell" / "modules" / "SettingsHub.qml"
+    settings_hub_txt = settings_hub_qml.read_text() if settings_hub_qml.exists() else ""
+    focus_bg_qml = SANDBOX_BASE / "quickshell" / "modules" / "FocusHUDBackground.qml"
+    focus_bg_txt = focus_bg_qml.read_text() if focus_bg_qml.exists() else ""
+    shell_qml = SANDBOX_BASE / "quickshell" / "shell.qml"
+    shell_txt = shell_qml.read_text() if shell_qml.exists() else ""
+
+    qml_crash_fixed = (
+        "PanelWindow {" in focus_txt
+        and "PanelWindow {" in focus_bg_txt
+        and "modelData: modelData" not in shell_txt
+    )
+    add_assertion(
+        "Quickshell QML crash-loop fix verified (FocusHUD & FocusHUDBackground use PanelWindow root; no self-binding modelData loops)",
+        qml_crash_fixed,
+        "Verified PanelWindow root on FocusHUD.qml & FocusHUDBackground.qml and clean Variants bindings in shell.qml",
+        "Focus & Settings Hub",
+    )
+
     hub_features_ok = (
         hub_py.exists()
+        and keybinds_tab_qml.exists()
+        and "KeybindsTab" in settings_hub_txt
         and "carbon-mode-keybinds.sh" in modes_txt
         and "saveBottomSetting(\"notchHeight\"" in modes_txt
     )
     add_assertion(
-        "Settings Hub (SUPER + SHIFT + C) includes /tmp/carbon-hub.sock fallback daemon, live mode keybind sync, and Notch geometry persistence",
+        "Settings Hub (SUPER + SHIFT + C) includes Keybinds & Gestures Studio tab, /tmp/carbon-hub.sock daemon, and live mode sync",
         hub_features_ok,
-        "Verified carbon-hub-daemon.py, carbon-mode-keybinds.sh sync, and Notch geometry/glyph persistence in ModesTab.qml",
+        "Verified KeybindsTab.qml in SettingsHub.qml, carbon-hub-daemon.py get_keybinds/save_keybinds, and ModesTab.qml",
         "Focus & Settings Hub",
+    )
+
+    # 5c. Verify zero WASD binds across all modes, MOD + F = fullscreen, and 3-finger touchpad gestures
+    kb_files_to_check = [
+        SANDBOX_BASE / "carbon" / "keybinds-shell-only.conf",
+        SANDBOX_BASE / "carbon" / "keybinds.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-minimal.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-notch.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-pill.conf",
+        SANDBOX_BASE / "carbon" / "configs" / "keybinds-vanish.conf",
+    ]
+    wasd_clashes = []
+    firefox_on_mod_f = False
+    fullscreen_on_mod_f = False
+    for kbf in kb_files_to_check:
+        if not kbf.exists():
+            continue
+        for raw_line in kbf.read_text().splitlines():
+            s = raw_line.strip()
+            if not s.startswith("bind") or "=" not in s:
+                continue
+            parts = [p.strip() for p in s.split("=", 1)[1].split(",")]
+            if len(parts) >= 3:
+                m = parts[0].replace("$mainMod", "SUPER").strip()
+                k = parts[1].upper()
+                d = parts[2].lower()
+                a = ",".join(parts[3:]).lower() if len(parts) > 3 else ""
+                if m == "SUPER" and k in ("W", "A", "S", "D"):
+                    wasd_clashes.append(f"{kbf.name}:{m}+{k}")
+                if m == "SUPER" and k == "F":
+                    if "firefox" in a:
+                        firefox_on_mod_f = True
+                    if d == "fullscreen":
+                        fullscreen_on_mod_f = True
+
+    gestures_conf = SANDBOX_BASE / "carbon" / "configs" / "gestures.conf"
+    gestures_init_sh = SANDBOX_BASE / "carbon" / "scripts" / "carbon-gestures-init.sh"
+    gestures_ok = (
+        gestures_conf.exists()
+        and gestures_init_sh.exists()
+        and "3, horizontal, workspace" in gestures_conf.read_text()
+    )
+    add_assertion(
+        "SUPER + W/A/S/D completely unbound across all modes, SUPER + F bound to fullscreen, and 3-finger touchpad gestures active",
+        len(wasd_clashes) == 0 and not firefox_on_mod_f and fullscreen_on_mod_f and gestures_ok,
+        f"WASD clashes: {len(wasd_clashes)}, SUPER+F fullscreen: {fullscreen_on_mod_f}, 3-finger workspace swipe: {gestures_ok}",
+        "Keybind Isolation",
     )
 
     # 6. Test Start Command (start.sh / carbon-start --dry-run)

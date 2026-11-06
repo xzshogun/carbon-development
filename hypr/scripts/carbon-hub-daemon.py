@@ -349,6 +349,92 @@ def handle_request(req):
                             suffix = f",mirror,{primary}" if state else ""
                             hypr_cmd(["keyword", "monitor", f"{sec},preferred,auto,1{suffix}"])
             data = {"feature": feat, "state": state}
+        elif action == "get_keybinds":
+            scope = req.get("scope") or (str(val) if val else "minimal")
+            rel_map = {
+                "minimal": "configs/keybinds-minimal.conf",
+                "notch": "configs/keybinds-notch.conf",
+                "pill": "configs/keybinds-pill.conf",
+                "vanish": "configs/keybinds-vanish.conf",
+                "nucleus": "configs/keybinds-vanish.conf",
+                "shell": "keybinds-shell-only.conf",
+                "default": "keybinds.conf",
+                "gestures": "configs/gestures.conf",
+            }
+            rel_path = rel_map.get(scope, "configs/keybinds-minimal.conf")
+            full_path = os.path.join(config_dir(), rel_path)
+            binds = []
+            if os.path.isfile(full_path):
+                with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                    for raw in f:
+                        s = raw.strip()
+                        if not s or s.startswith("#") or s.startswith("$") or "=" not in s:
+                            continue
+                        lhs, rhs = s.split("=", 1)
+                        btype = lhs.strip()
+                        if not btype.startswith("bind"):
+                            continue
+                        parts = [p.strip() for p in rhs.split(" #", 1)[0].split(",")]
+                        if len(parts) >= 3:
+                            binds.append({
+                                "bindType": btype,
+                                "mods": parts[0],
+                                "key": parts[1],
+                                "dispatcher": parts[2],
+                                "arg": ", ".join(parts[3:]).strip() if len(parts) > 3 else "",
+                            })
+            data = {"scope": scope, "filePath": full_path, "binds": binds}
+        elif action == "save_keybinds":
+            scope = req.get("scope") or "minimal"
+            rel_map = {
+                "minimal": "configs/keybinds-minimal.conf",
+                "notch": "configs/keybinds-notch.conf",
+                "pill": "configs/keybinds-pill.conf",
+                "vanish": "configs/keybinds-vanish.conf",
+                "nucleus": "configs/keybinds-vanish.conf",
+                "shell": "keybinds-shell-only.conf",
+                "default": "keybinds.conf",
+            }
+            rel_path = rel_map.get(scope, "configs/keybinds-minimal.conf")
+            binds = req.get("binds") or (val if isinstance(val, list) else [])
+            lines = [
+                "#################################################################",
+                f"# CARBON SHELL — {scope.upper()} KEYBINDINGS",
+                f"# File: ~/.config/carbon/{rel_path}",
+                "#################################################################",
+                "",
+                "$mainMod = SUPER",
+            ]
+            if scope == "default":
+                lines.extend(["$terminal = kitty", "$fileManager = nautilus"])
+            lines.append("")
+            for b in binds:
+                if not isinstance(b, dict) or not b.get("key"):
+                    continue
+                bt = b.get("bindType", "bind")
+                mods = b.get("mods", "$mainMod")
+                key = b.get("key", "")
+                disp = b.get("dispatcher", "exec")
+                arg = b.get("arg", "")
+                if arg:
+                    lines.append(f"{bt} = {mods}, {key}, {disp}, {arg}")
+                else:
+                    lines.append(f"{bt} = {mods}, {key}, {disp},")
+            content = "\n".join(lines) + "\n"
+            for base in [config_dir(), os.path.join(home_dir(), ".config", "hypr")]:
+                dst = os.path.join(base, rel_path)
+                try:
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    with open(dst, "w", encoding="utf-8") as f:
+                        f.write(content)
+                except Exception:
+                    pass
+            mode_sh = os.path.join(config_dir(), "scripts", "carbon-mode-keybinds.sh")
+            if os.path.isfile(mode_sh):
+                subprocess.Popen(["bash", mode_sh], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                hypr_cmd(["reload"])
+            data = {"scope": scope, "relPath": rel_path, "count": len(binds)}
         else:
             return {
                 "status": "error",

@@ -208,10 +208,46 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
     exit 0
 fi
 
+# Auto-detect Wayland & Hyprland sockets if missing from caller shell
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
+    for sock in "$RUNTIME_DIR"/wayland-*; do
+        if [[ -S "$sock" ]]; then
+            export WAYLAND_DISPLAY="$(basename "$sock")"
+            break
+        fi
+    done
+fi
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" && -d "$RUNTIME_DIR/hypr" ]]; then
+    for hdir in "$RUNTIME_DIR"/hypr/*; do
+        if [[ -d "$hdir" ]]; then
+            export HYPRLAND_INSTANCE_SIGNATURE="$(basename "$hdir")"
+            break
+        fi
+    done
+fi
+
 export CARBON_CONFIG_DIR="$CONFIG_DIR"
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
 export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-Hyprland}"
 export PATH="$BIN_DIR:$PATH"
+
+# Symlink ~/.config/quickshell/carbon -> $QUICKSHELL_DIR so both -p and -c carbon work
+mkdir -p "$HOME/.config/quickshell" 2>/dev/null || true
+ln -sfn "$QUICKSHELL_DIR" "$HOME/.config/quickshell/carbon" 2>/dev/null || true
+
+# Export display environment into systemd user session
+if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+    dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORM CARBON_CONFIG_DIR PATH >/dev/null 2>&1 || true
+fi
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORM CARBON_CONFIG_DIR PATH >/dev/null 2>&1 || true
+fi
+
+# Apply touchpad & 3-finger gesture configuration if available
+if [[ -x "$CONFIG_DIR/scripts/carbon-gestures-init.sh" ]]; then
+    bash "$CONFIG_DIR/scripts/carbon-gestures-init.sh" >/dev/null 2>&1 || true
+fi
 
 # Reload Hyprland if running
 if [[ "$NO_RELOAD" -eq 0 ]] && command -v hyprctl >/dev/null 2>&1; then
@@ -239,9 +275,10 @@ if [[ "$FOREGROUND" -eq 1 ]]; then
     pkill -x quickshell >/dev/null 2>&1 || true
     sleep 0.3
     info "Running Quickshell in foreground (Ctrl+C to stop)..."
-    exec "$QS_BIN" --config "$QUICKSHELL_DIR"
+    exec "$QS_BIN" -p "$QUICKSHELL_DIR"
 fi
 
+# Ensure Settings Hub backend daemon is listening on /tmp/carbon-hub.sock
 if [[ ! -S "/tmp/carbon-hub.sock" ]]; then
     if [[ -x "$BIN_DIR/carbon-hub-daemon" ]] && ! pgrep -x carbon-hub-daemon >/dev/null 2>&1; then
         nohup "$BIN_DIR/carbon-hub-daemon" >/dev/null 2>&1 &
@@ -253,14 +290,29 @@ if [[ ! -S "/tmp/carbon-hub.sock" ]]; then
 fi
 
 if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files carbon-quickshell.service >/dev/null 2>&1; then
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
     if systemctl --user restart carbon-quickshell.service >/dev/null 2>&1; then
-        ok "Carbon Shell started via systemd (carbon-quickshell.service)"
-        exit 0
+        sleep 1.0
+        if pgrep -x quickshell >/dev/null 2>&1; then
+            ok "Carbon Shell started via systemd (carbon-quickshell.service)"
+            exit 0
+        else
+            warn "systemd carbon-quickshell.service exited early; launching Quickshell directly..."
+            systemctl --user stop carbon-quickshell.service >/dev/null 2>&1 || true
+        fi
     fi
 fi
 
 [[ -n "$QS_BIN" ]] || die "quickshell binary not found. Please install quickshell first."
 pkill -x quickshell >/dev/null 2>&1 || true
 sleep 0.3
-nohup "$QS_BIN" --config "$QUICKSHELL_DIR" >/tmp/carbon-quickshell.log 2>&1 &
-ok "Carbon Shell started in background (PID $!, logs: /tmp/carbon-quickshell.log)"
+nohup "$QS_BIN" -p "$QUICKSHELL_DIR" >/tmp/carbon-quickshell.log 2>&1 &
+QS_PID=$!
+sleep 0.8
+if kill -0 "$QS_PID" >/dev/null 2>&1; then
+    ok "Carbon Shell started in background (PID $QS_PID, logs: /tmp/carbon-quickshell.log)"
+else
+    err "Quickshell exited unexpectedly. Last log lines from /tmp/carbon-quickshell.log:"
+    tail -n 20 /tmp/carbon-quickshell.log >&2 || true
+    exit 1
+fi

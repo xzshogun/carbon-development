@@ -22,12 +22,12 @@ hl.bind("ALT + Super_R", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanis
 -- Vanish Synced Lyrics (SUPER + M)
 hl.bind("SUPER + M", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh lyrics"))
 
--- Vanish Wallpaper Ring (SUPER + W)
-hl.bind("SUPER + W", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh wallpaper"))
+-- Vanish Wallpaper Ring (SUPER + N)
+hl.bind("SUPER + N", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh wallpaper"))
 
 -- Vanish Direct Lobe Blooms
 hl.bind("SUPER + C", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh focus-connect"))
-hl.bind("SUPER + N", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh focus-alerts"))
+hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-vanish-dispatch.sh focus-alerts"))
 
 -- Vanish Spotlight Command Palette (SUPER + R)
 hl.bind("SUPER + R", hl.dsp.exec_cmd("sh ~/.config/hypr/scripts/carbon-ipc.sh spotlight"))

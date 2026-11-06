@@ -40,6 +40,10 @@ struct HubRequest {
     temp: Option<i64>,
     #[serde(default)]
     feature: Option<String>,
+    #[serde(default)]
+    scope: Option<String>,
+    #[serde(default)]
+    binds: Option<Value>,
 }
 
 #[derive(Debug, Serialize)]
@@ -991,6 +995,118 @@ async fn handle_request(req: HubRequest) -> HubResponse {
                 status: "ok".into(),
                 action: Some(action),
                 data: Some(json!({ "feature": feat, "state": state })),
+                error: None,
+                elapsed_us: Some(t0.elapsed().as_micros()),
+            }
+        }
+        "get_keybinds" => {
+            let scope = req.scope.unwrap_or_else(|| "minimal".into());
+            let rel_path = match scope.as_str() {
+                "notch" => "configs/keybinds-notch.conf",
+                "pill" => "configs/keybinds-pill.conf",
+                "vanish" | "nucleus" => "configs/keybinds-vanish.conf",
+                "shell" => "keybinds-shell-only.conf",
+                "default" => "keybinds.conf",
+                "gestures" => "configs/gestures.conf",
+                _ => "configs/keybinds-minimal.conf",
+            };
+            let full_path = config_dir().join(rel_path);
+            let mut binds = Vec::new();
+            if let Ok(raw) = fs::read_to_string(&full_path) {
+                for line in raw.lines() {
+                    let s = line.trim();
+                    if s.is_empty() || s.starts_with('#') || s.starts_with('$') || !s.contains('=') {
+                        continue;
+                    }
+                    let mut split_eq = s.splitn(2, '=');
+                    let btype = split_eq.next().unwrap_or("").trim();
+                    let rhs = split_eq.next().unwrap_or("").split(" #").next().unwrap_or("").trim();
+                    if !btype.starts_with("bind") {
+                        continue;
+                    }
+                    let parts: Vec<&str> = rhs.split(',').map(|p| p.trim()).collect();
+                    if parts.len() >= 3 {
+                        let arg = if parts.len() > 3 { parts[3..].join(", ") } else { String::new() };
+                        binds.push(json!({
+                            "bindType": btype,
+                            "mods": parts[0],
+                            "key": parts[1],
+                            "dispatcher": parts[2],
+                            "arg": arg
+                        }));
+                    }
+                }
+            }
+            HubResponse {
+                status: "ok".into(),
+                action: Some(action),
+                data: Some(json!({
+                    "scope": scope,
+                    "filePath": full_path.to_string_lossy(),
+                    "binds": binds
+                })),
+                error: None,
+                elapsed_us: Some(t0.elapsed().as_micros()),
+            }
+        }
+        "save_keybinds" => {
+            let scope = req.scope.unwrap_or_else(|| "minimal".into());
+            let rel_path = match scope.as_str() {
+                "notch" => "configs/keybinds-notch.conf",
+                "pill" => "configs/keybinds-pill.conf",
+                "vanish" | "nucleus" => "configs/keybinds-vanish.conf",
+                "shell" => "keybinds-shell-only.conf",
+                "default" => "keybinds.conf",
+                _ => "configs/keybinds-minimal.conf",
+            };
+            let mut lines = vec![
+                "#################################################################".to_string(),
+                format!("# CARBON SHELL — {} KEYBINDINGS", scope.to_uppercase()),
+                format!("# File: ~/.config/carbon/{}", rel_path),
+                "#################################################################".to_string(),
+                String::new(),
+                "$mainMod = SUPER".to_string(),
+            ];
+            if scope == "default" {
+                lines.push("$terminal = kitty".to_string());
+                lines.push("$fileManager = nautilus".to_string());
+            }
+            lines.push(String::new());
+            if let Some(arr) = req.binds.or(req.value).and_then(|v| v.as_array().cloned()) {
+                for b in arr {
+                    let bt = b.get("bindType").and_then(|v| v.as_str()).unwrap_or("bind");
+                    let mods = b.get("mods").and_then(|v| v.as_str()).unwrap_or("$mainMod");
+                    let key = b.get("key").and_then(|v| v.as_str()).unwrap_or("");
+                    let disp = b.get("dispatcher").and_then(|v| v.as_str()).unwrap_or("exec");
+                    let arg = b.get("arg").and_then(|v| v.as_str()).unwrap_or("");
+                    if key.is_empty() {
+                        continue;
+                    }
+                    if arg.is_empty() {
+                        lines.push(format!("{} = {}, {}, {},", bt, mods, key, disp));
+                    } else {
+                        lines.push(format!("{} = {}, {}, {}, {}", bt, mods, key, disp, arg));
+                    }
+                }
+            }
+            let content = lines.join("\n") + "\n";
+            for base in [config_dir(), home_dir().join(".config/hypr")] {
+                let dst = base.join(rel_path);
+                if let Some(parent) = dst.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
+                let _ = fs::write(&dst, &content);
+            }
+            let mode_sh = config_dir().join("scripts/carbon-mode-keybinds.sh");
+            if mode_sh.exists() {
+                let _ = Command::new("bash").arg(&mode_sh).spawn();
+            } else {
+                let _ = send_raw_hypr_cmd("reload").await;
+            }
+            HubResponse {
+                status: "ok".into(),
+                action: Some(action),
+                data: Some(json!({ "scope": scope, "relPath": rel_path })),
                 error: None,
                 elapsed_us: Some(t0.elapsed().as_micros()),
             }
